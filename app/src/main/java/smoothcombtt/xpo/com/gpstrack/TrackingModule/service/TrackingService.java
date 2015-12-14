@@ -3,6 +3,10 @@ package smoothcombtt.xpo.com.gpstrack.TrackingModule.service;
 import android.app.Service;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -27,16 +31,17 @@ import smoothcombtt.xpo.com.gpstrack.TrackingModule.provider.TrackingProvider;
  */
 public class TrackingService extends Service {
 
-    private static final int TWO_MINUTES = 1000 * 60 * 2;
+    private static final int ONE_MINUTES = 1000 * 60 * 1;
     private static final int INIT_TIME = 5000;
     private static final int SAMPLE_TIME = 1000 * 30;
-    private static final int GET_INFO_TIME = 1000 * 4;
+    private static final int GET_INFO_TIME = 100 * 35;
 
     private static final int MULTIPLICATOR = 100000000;
     private static final Double DIVIDER = 100000000.0;
 
     private LocationManager locationManager;
     private CustomLocationListener customLocationListener;
+    private CustomSensorEventListener customSensorEventListener;
     private Location currentLocation;
     private Location newLocation;
     private ArrayList<Location> arrayLocations;
@@ -50,6 +55,10 @@ public class TrackingService extends Service {
     private Handler handlerGetDataPeriod;
     private Runnable runnableGetDataPeriod;
 
+    private SensorManager sensorManager;
+
+    private boolean firstTime = false;
+
 
     @Nullable
     @Override
@@ -60,7 +69,10 @@ public class TrackingService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        StartlocationService();
+
+        handlerSampleLocation = new Handler();
+        handlerGetDataPeriod = new Handler();
+        startAccelerometer(); // Iniciamos el Sensor Manager
     }
 
     @Override
@@ -70,8 +82,6 @@ public class TrackingService extends Service {
         currentLocation = new Location(LocationManager.GPS_PROVIDER);
         newLocation = new Location(LocationManager.GPS_PROVIDER);
 
-        handlerSampleLocation = new Handler();
-        handlerGetDataPeriod = new Handler();
 
         runnableSampleLocation = new Runnable() {
             @Override
@@ -79,9 +89,7 @@ public class TrackingService extends Service {
                 Log.e("SamplePeriod", "Stop");
                 handlerSampleLocation.removeCallbacks(runnableSampleLocation);
 
-                currentLocation.setLatitude(0.0);
-                currentLocation.setLongitude(0.0);
-
+                firstTime = true;
                 StartlocationService();
 
                 handlerGetDataPeriod.postDelayed(runnableGetDataPeriod, GET_INFO_TIME);
@@ -103,10 +111,43 @@ public class TrackingService extends Service {
             }
         };
 
-        handlerSampleLocation.postDelayed(runnableSampleLocation, SAMPLE_TIME);
-        Log.e("SamplePeriod", "Start");
+        firstTime = true;
+        StartlocationService();
+        handlerGetDataPeriod.postDelayed(runnableGetDataPeriod, GET_INFO_TIME);
+        Log.e("GetDataPeriod", "Start");
 
-        return START_STICKY;
+        return START_NOT_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        isMoving = false;
+
+        if (handlerSampleLocation != null) {
+            handlerSampleLocation.removeCallbacks(runnableSampleLocation);
+
+            handlerSampleLocation = null;
+            runnableSampleLocation = null;
+            Log.e("GetSampleLocation", "Stop - Destroy");
+        }
+
+        if (handlerGetDataPeriod != null) {
+            handlerGetDataPeriod.removeCallbacks(runnableGetDataPeriod);
+            handlerGetDataPeriod = null;
+            runnableGetDataPeriod = null;
+            Log.e("GetDataPeriod", "Stop - Destroy");
+        }
+
+        // Reset de variables utilizadas
+        timesLoc = 0;
+        arrayLocations = null;
+        tempLat = 0.0;
+        tempLng = 0.0;
+        StopLocationService();
+        stopAccelerometer();
+
+
     }
 
     private class CustomLocationListener implements LocationListener {
@@ -114,25 +155,34 @@ public class TrackingService extends Service {
         @Override
         public void onLocationChanged(Location location) {
 
+            if(firstTime){
+                currentLocation = location;
+                SaveLocation(location);
+                firstTime = false;
+            }
+
             if (isBetterLocation(location, currentLocation)) {
 
                 if (isNearToNextPosition(currentLocation, location)) {
 
                     if (arrayLocations != null) {
+
                         arrayLocations.add(location);
                         timesLoc++;
                         Log.e("Cuantity", String.valueOf(timesLoc));
                         Log.e("Distance", "NEAR");
+
                     } else {
                         arrayLocations = new ArrayList<Location>();
                     }
 
                 } else {
+                    /*
                     if ((currentLocation.getLatitude() == 0.0) || (currentLocation.getLongitude() == 0.0)) {
                         currentLocation.setLatitude(location.getLatitude());
                         currentLocation.setLongitude(location.getLongitude());
                         Log.e("SetCurrLoc", String.valueOf(currentLocation.getLatitude()) + "," + String.valueOf(currentLocation.getLongitude()));
-                    }
+                    }*/
 
                     Log.e("Distance", "FAR");
                     Log.e("LocRead", String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()));
@@ -177,30 +227,57 @@ public class TrackingService extends Service {
         }
     }
 
-    @Override
-    public void onDestroy() {
 
-        StopLocationService();
+    /**
+     * Metodos para capturar el estado del sensor
+     */
+    private void startAccelerometer() {
 
-        if (handlerSampleLocation != null) {
-            handlerSampleLocation.removeCallbacks(runnableSampleLocation);
-            Log.e("GetSampleLocation", "Stop - Destroy");
-        }
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        customSensorEventListener = new CustomSensorEventListener();
+        sensorManager.registerListener(customSensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_FASTEST);
 
-        if (handlerGetDataPeriod != null) {
-            handlerGetDataPeriod.removeCallbacks(runnableGetDataPeriod);
-            Log.e("GetDataPeriod", "Stop - Destroy");
-        }
-
-        // Reset de variables utilizadas
-        timesLoc = 0;
-        arrayLocations = null;
-        tempLat = 0.0;
-        tempLng = 0.0;
-
-
-        super.onDestroy();
     }
+
+    private void stopAccelerometer() {
+
+        if (customSensorEventListener != null) {
+            sensorManager.unregisterListener(customSensorEventListener);
+        }
+    }
+
+    static float tempX = 0;
+    static float tempY = 0;
+    static float tempZ = 0;
+
+    static boolean isMoving = false;
+
+    private class CustomSensorEventListener implements SensorEventListener {
+
+        @Override
+        public void onSensorChanged(SensorEvent sensorEvent) {
+
+            if ((Math.abs(tempX - sensorEvent.values[0]) > 0.5) || (Math.abs(tempY - sensorEvent.values[1]) > 0.5) || (Math.abs(tempZ - sensorEvent.values[2]) > 0.5)) {
+                tempX = sensorEvent.values[0];
+                tempY = sensorEvent.values[1];
+                tempZ = sensorEvent.values[2];
+
+                Log.e("X:", "X:" + String.valueOf(tempX) + "/" +
+                        "Y:" + String.valueOf(tempY) + "/" +
+                        "Z:" + String.valueOf(tempZ));
+                isMoving = true;
+
+            } else {
+                isMoving = false;
+            }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int i) {
+
+        }
+    }
+
 
     /**
      * Metodo para almacenar una posicion aceptable
@@ -236,18 +313,24 @@ public class TrackingService extends Service {
             // Guardamos si el punto es diferente al anterior guardado
 
 
-            tempSaveLastLat = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK,MODE_PRIVATE)
+            tempSaveLastLat = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
                     .getString(GpsConstants.SHARE_POSITION_TRACK_LAT, "0.0"));
 
-            tempSaveLastLng = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK,MODE_PRIVATE)
+            tempSaveLastLng = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
                     .getString(GpsConstants.SHARE_POSITION_TRACK_LNG, "0.0"));
 
             deltaLat = Math.abs(newLocation.getLatitude() - tempSaveLastLat);
             DeltaLng = Math.abs(newLocation.getLongitude() - tempSaveLastLng);
 
-            if((deltaLat > 0.0001)&&(DeltaLng > 0.0001)){
+            if ((deltaLat > 0.00001) && (DeltaLng > 0.00001)) {
 
-                SaveLocation(newLocation);
+                if(isMoving){
+                    Log.e("isMoving", "TRUE");
+                    SaveLocation(newLocation);
+                }
+                else{
+                    Log.e("isMoving", "FALSE");
+                }
             }
 
             timesLoc = 0;
@@ -277,16 +360,17 @@ public class TrackingService extends Service {
         if (locationManager != null) {
             Log.e("LocService", "StopService");
             locationManager.removeUpdates(customLocationListener);
+            locationManager = null;
         }
     }
 
-
     /**
      * Metodo para guardar la position en base de datos
+     *
      * @param newLocation
      * @return
      */
-    private Location SaveLocation(Location newLocation){
+    private Location SaveLocation(Location newLocation) {
 
         Date date = new Date();
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -300,10 +384,10 @@ public class TrackingService extends Service {
 
         // Guardamos la última posición en variables
 
-        getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK,MODE_PRIVATE)
+        getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
                 .edit().putString(GpsConstants.SHARE_POSITION_TRACK_LAT, String.valueOf(newLocation.getLatitude())).commit();
 
-        getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK,MODE_PRIVATE)
+        getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
                 .edit().putString(GpsConstants.SHARE_POSITION_TRACK_LNG, String.valueOf(newLocation.getLongitude())).commit();
 
 
@@ -320,6 +404,7 @@ public class TrackingService extends Service {
 
     /**
      * Métodos para conseguir una mejor posicion
+     *
      * @param location
      * @param currentBestLocation
      * @return
@@ -332,8 +417,8 @@ public class TrackingService extends Service {
 
         // Check whether the new location fix is newer or older
         long timeDelta = location.getTime() - currentBestLocation.getTime();
-        boolean isSignificantlyNewer = timeDelta > TWO_MINUTES;
-        boolean isSignificantlyOlder = timeDelta < -TWO_MINUTES;
+        boolean isSignificantlyNewer = timeDelta > ONE_MINUTES;
+        boolean isSignificantlyOlder = timeDelta < -ONE_MINUTES;
         boolean isNewer = timeDelta > 0;
 
         // If it's been more than two minutes since the current location, use the new location
@@ -349,7 +434,7 @@ public class TrackingService extends Service {
         int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
         boolean isLessAccurate = accuracyDelta > 0;
         boolean isMoreAccurate = accuracyDelta < 0;
-        boolean isSignificantlyLessAccurate = accuracyDelta > 200;
+        boolean isSignificantlyLessAccurate = accuracyDelta > 100;
 
         // Check if the old and new location are from the same provider
         boolean isFromSameProvider = isSameProvider(location.getProvider(),
@@ -368,6 +453,7 @@ public class TrackingService extends Service {
 
     /**
      * Checks whether two providers are the same
+     *
      * @param provider1
      * @param provider2
      * @return
@@ -381,6 +467,7 @@ public class TrackingService extends Service {
 
     /**
      * Metodo para hacer evaluar el alejamiento de dos posiciones
+     *
      * @param origin
      * @param destino
      * @return
@@ -405,7 +492,7 @@ public class TrackingService extends Service {
         deltaLat = Math.abs(tempOriginLat - tempDestinoLat);
         deltaLng = Math.abs(tempOriginLng - tempDestinoLng);
 
-        if ((1E-6 > deltaLat) || (deltaLng < 1E-6)) {
+        if ((1E-5 > deltaLat) || (deltaLng < 1E-5)) {
             return true;
         }
 

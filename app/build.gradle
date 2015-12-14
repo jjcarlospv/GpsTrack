@@ -26,4 +26,6 @@ dependencies {
     compile 'com.android.support:design:23.1.0'
     compile 'com.google.android.gms:play-services:8.3.0'
     compile 'com.loopj.android:android-async-http:1.4.9'
+    compile files('libs/ksoap2-android-assembly-2.6.5-jar-with-dependencies.jar')
+
 }

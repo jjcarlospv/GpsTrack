@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import android.support.v7.app.AppCompatActivity;
@@ -23,6 +24,9 @@ import android.widget.FrameLayout;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.provider.TrackingProvider;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.service.TrackingService;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.fragment.MapFragment;
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.soap.ProxyImpl;
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.soap.WebServiceFactory;
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.soap.tos.ResultTO;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -60,6 +64,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void getMapStatus(int i) {
 
+                    switch(i){
+                        case 1:
+                            ShowMarkers();
+                            break;
+                    }
             }
         });
     }
@@ -118,25 +127,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.act_main_show_markers:
-
-                Cursor cursor = getContentResolver().query(TrackingProvider.URI_SAVE_POSITION, null, null, null, null);
-
-                if(cursor != null){
-
-                    mapFragment.CleanMap();
-
-                    while(cursor.moveToNext()){
-
-                        Double tempLat = cursor.getDouble(1);
-                        Double tempLng = cursor.getDouble(2);
-                        mapFragment.addMarker(tempLat, tempLng);
-                    }
-                }
-
+                ShowMarkers();
                 break;
 
             case R.id.act_main_clean_data:
+                getContentResolver().delete(TrackingProvider.URI_SAVE_POSITION, null, null);
+                ShowMarkers();
+
+/*
+                AsyncTask<ResultTO, Integer, Void> asyncTask = new AsyncTask<ResultTO, Integer, Void>() {
+                    @Override
+                    protected Void doInBackground(ResultTO... resultTOs) {
+
+                        ResultTO result = new ResultTO();
+                        result = WebServiceFactory.getFactory().getDotNetSoapWebservice(ProxyImpl.class)
+                                .authentification("Test","test321","AGHKJKHJJJD");
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Void aVoid) {
+                        super.onPostExecute(aVoid);
+                    }
+                };
+
+                asyncTask.execute(new ResultTO());
+*/
+
                 break;
+        }
+    }
+
+    private void ShowMarkers(){
+
+        Cursor cursor = getContentResolver().query(TrackingProvider.URI_SAVE_POSITION, null, null, null, null);
+
+        if(cursor != null){
+
+            mapFragment.CleanMap();
+
+            while(cursor.moveToNext()){
+
+                Double tempLat = cursor.getDouble(1);
+                Double tempLng = cursor.getDouble(2);
+                mapFragment.addMarker(tempLat, tempLng);
+            }
         }
     }
 

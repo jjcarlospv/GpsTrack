@@ -109,6 +109,10 @@ public class TrackingProvider extends ContentProvider {
 
             switch (uriMatcher.match(uri)) {
 
+                case SAVE_POSITION:
+                    i = sqLiteDatabase.delete(DataBaseHelper.TABLE_NAME_SAVE_POSITION, s, strings);
+                    break;
+
                 case SAVE_POSITION_ID:
                     s = "_id=" + uri.getLastPathSegment();
                     i = sqLiteDatabase.delete(DataBaseHelper.TABLE_NAME_SAVE_POSITION, s, strings);
