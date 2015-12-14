@@ -70,13 +70,15 @@ public class TrackingService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        handlerSampleLocation = new Handler();
-        handlerGetDataPeriod = new Handler();
-        startAccelerometer(); // Iniciamos el Sensor Manager
+
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+        handlerSampleLocation = new Handler();
+        handlerGetDataPeriod = new Handler();
+        startAccelerometer(); // Iniciamos el Sensor Manager
 
         arrayLocations = new ArrayList<Location>();
         currentLocation = new Location(LocationManager.GPS_PROVIDER);
