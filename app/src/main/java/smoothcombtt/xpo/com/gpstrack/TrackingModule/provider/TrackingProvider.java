@@ -18,10 +18,10 @@ public class TrackingProvider extends ContentProvider {
 
 
     public static final String CLASS_NAME = "TrackingProvider";
-    public static final String PACKAGE_NAME = "com.tzigostore.project";
+    public static final String PACKAGE_NAME = "smoothcombtt.xpo.com.gpstrack";
     public static final Uri URI = Uri.parse("content://" + PACKAGE_NAME + "." + CLASS_NAME);
 
-    public static final Uri URI_SEARCH_PLACE = Uri.parse(URI + "/" + DataBaseHelper.TABLE_NAME_SAVE_POSITION);
+    public static final Uri URI_SAVE_POSITION = Uri.parse(URI + "/" + DataBaseHelper.TABLE_NAME_SAVE_POSITION);
 
     private DataBaseHelper dataBaseHelper;
     private SQLiteDatabase sqLiteDatabase;
@@ -36,7 +36,7 @@ public class TrackingProvider extends ContentProvider {
 
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         uriMatcher.addURI(URI.getAuthority(), DataBaseHelper.TABLE_NAME_SAVE_POSITION, SAVE_POSITION);
-        uriMatcher.addURI(URI.getAuthority(), DataBaseHelper.TABLE_NAME_SAVE_POSITION,SAVE_POSITION_ID);
+        uriMatcher.addURI(URI.getAuthority(), DataBaseHelper.TABLE_NAME_SAVE_POSITION + "/#",SAVE_POSITION_ID);
     }
 
 
@@ -90,7 +90,7 @@ public class TrackingProvider extends ContentProvider {
                 case SAVE_POSITION:
                     long idsp = sqLiteDatabase.insert(DataBaseHelper.TABLE_NAME_SAVE_POSITION, null, contentValues);
                     if (idsp != -1) {
-                        uri1 = ContentUris.withAppendedId(URI_SEARCH_PLACE, idsp);
+                        uri1 = ContentUris.withAppendedId(URI_SAVE_POSITION, idsp);
                     } else {
                         uri1 = null;
                     }

@@ -30,7 +30,7 @@
         </service>
 
         <provider
-            android:authorities="com.tzigostore.project.TrackingProvider"
+            android:authorities="smoothcombtt.xpo.com.gpstrack.TrackingProvider"
             android:name=".TrackingModule.provider.TrackingProvider"/>
 
         <meta-data

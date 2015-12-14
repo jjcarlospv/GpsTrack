@@ -19,4 +19,9 @@
 
     <string name="default_upload_website">https://www.websmithing.com/gpstracker/displaymap.php</string>
     <string name="maps_api_key">AIzaSyCAfv22U58BL9Vxjbz_VWzkMpfAe-ngTpk</string>
+
+    <string name="GPS_error_title">Authorization error</string>
+    <string name="GPS_error">Please activate the GPS. You won\'t be able to use SmoothCom</string>
+    <string name="lblOK">Ok</string>
+
 </resources>

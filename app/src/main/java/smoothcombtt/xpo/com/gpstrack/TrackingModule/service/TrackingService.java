@@ -11,14 +11,13 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.Notification;
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.GpsConstants;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.database.DataBaseHelper;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.fragment.MapFragment;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.provider.TrackingProvider;
@@ -80,7 +79,10 @@ public class TrackingService extends Service {
                 Log.e("SamplePeriod", "Stop");
                 handlerSampleLocation.removeCallbacks(runnableSampleLocation);
 
-                SaveGoodPosition();
+                currentLocation.setLatitude(0.0);
+                currentLocation.setLongitude(0.0);
+
+                StartlocationService();
 
                 handlerGetDataPeriod.postDelayed(runnableGetDataPeriod, GET_INFO_TIME);
                 Log.e("GetDataPeriod", "Start");
@@ -92,6 +94,10 @@ public class TrackingService extends Service {
             public void run() {
                 Log.e("GetDataPeriod", "Stop");
                 handlerGetDataPeriod.removeCallbacks(runnableGetDataPeriod);
+
+                StopLocationService();
+                SaveGoodPosition();
+
                 handlerSampleLocation.postDelayed(runnableSampleLocation, SAMPLE_TIME);
                 Log.e("SamplePeriod", "Start");
             }
@@ -100,7 +106,7 @@ public class TrackingService extends Service {
         handlerSampleLocation.postDelayed(runnableSampleLocation, SAMPLE_TIME);
         Log.e("SamplePeriod", "Start");
 
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     private class CustomLocationListener implements LocationListener {
@@ -123,7 +129,8 @@ public class TrackingService extends Service {
 
                 } else {
                     if ((currentLocation.getLatitude() == 0.0) || (currentLocation.getLongitude() == 0.0)) {
-                        currentLocation = SaveLocation(location);
+                        currentLocation.setLatitude(location.getLatitude());
+                        currentLocation.setLongitude(location.getLongitude());
                         Log.e("SetCurrLoc", String.valueOf(currentLocation.getLatitude()) + "," + String.valueOf(currentLocation.getLongitude()));
                     }
 
@@ -201,6 +208,11 @@ public class TrackingService extends Service {
 
     private void SaveGoodPosition() {
 
+        Double tempSaveLastLat = 0.0;
+        Double tempSaveLastLng = 0.0;
+        Double deltaLat = 0.0;
+        Double DeltaLng = 0.0;
+
         if ((arrayLocations != null) && (timesLoc > 0)) {
 
             tempLat = 0.0;
@@ -223,9 +235,19 @@ public class TrackingService extends Service {
 
             // Guardamos si el punto es diferente al anterior guardado
 
-            if((newLocation.getLatitude() - currentLocation.getLatitude() != 0)&&(newLocation.getLongitude() - currentLocation.getLongitude() != 0)){
 
-                currentLocation = SaveLocation(newLocation);
+            tempSaveLastLat = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK,MODE_PRIVATE)
+                    .getString(GpsConstants.SHARE_POSITION_TRACK_LAT, "0.0"));
+
+            tempSaveLastLng = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK,MODE_PRIVATE)
+                    .getString(GpsConstants.SHARE_POSITION_TRACK_LNG, "0.0"));
+
+            deltaLat = Math.abs(newLocation.getLatitude() - tempSaveLastLat);
+            DeltaLng = Math.abs(newLocation.getLongitude() - tempSaveLastLng);
+
+            if((deltaLat > 0.0001)&&(DeltaLng > 0.0001)){
+
+                SaveLocation(newLocation);
             }
 
             timesLoc = 0;
@@ -274,7 +296,16 @@ public class TrackingService extends Service {
         contentValues.put(DataBaseHelper.LATITUDE, newLocation.getLatitude());
         contentValues.put(DataBaseHelper.LONGITUDE, newLocation.getLongitude());
         contentValues.put(DataBaseHelper.DATE, tempLng);
-        getContentResolver().insert(TrackingProvider.URI_SEARCH_PLACE, contentValues);
+        getContentResolver().insert(TrackingProvider.URI_SAVE_POSITION, contentValues);
+
+        // Guardamos la última posición en variables
+
+        getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK,MODE_PRIVATE)
+                .edit().putString(GpsConstants.SHARE_POSITION_TRACK_LAT, String.valueOf(newLocation.getLatitude())).commit();
+
+        getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK,MODE_PRIVATE)
+                .edit().putString(GpsConstants.SHARE_POSITION_TRACK_LNG, String.valueOf(newLocation.getLongitude())).commit();
+
 
         Intent intentTestService = new Intent(MapFragment.POSITION_ACTION);
         intentTestService.putExtra(MapFragment.PROGRESS_LATITUDE, String.valueOf(newLocation.getLatitude()));

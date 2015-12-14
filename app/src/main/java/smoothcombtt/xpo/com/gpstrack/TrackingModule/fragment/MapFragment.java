@@ -54,11 +54,6 @@ public class MapFragment extends com.google.android.gms.maps.MapFragment impleme
 
     }
 
-
-    /*
-    En este laboratorio no vamos a utilizar este método, sin embargo
-    sirve para mover el mapa hacia unas coordenadas deseadas.
-     */
     public void moveTo(final double latitude, final double longitude, final boolean animate) {
         final LatLng latLng = new LatLng(latitude, longitude);
         final CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -92,6 +87,10 @@ public class MapFragment extends com.google.android.gms.maps.MapFragment impleme
 
     public void setMapFragmentInterface(MapFragmentInterface mapFragmentInterface) {
         this.mapFragmentInterface = mapFragmentInterface;
+    }
+
+    public void CleanMap(){
+        googleMap.clear();
     }
 
     @Override
