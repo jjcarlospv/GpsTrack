@@ -1,6 +1,7 @@
 package smoothcombtt.xpo.com.gpstrack;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -20,6 +22,22 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 
+
+import com.directions.route.AbstractRouting;
+import com.directions.route.Route;
+import com.directions.route.Routing;
+import com.directions.route.RoutingListener;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.provider.TrackingProvider;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.service.TrackingService;
@@ -133,27 +151,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.act_main_clean_data:
                 getContentResolver().delete(TrackingProvider.URI_SAVE_POSITION, null, null);
                 ShowMarkers();
-
-/*
-                AsyncTask<ResultTO, Integer, Void> asyncTask = new AsyncTask<ResultTO, Integer, Void>() {
-                    @Override
-                    protected Void doInBackground(ResultTO... resultTOs) {
-
-                        ResultTO result = new ResultTO();
-                        result = WebServiceFactory.getFactory().getDotNetSoapWebservice(ProxyImpl.class)
-                                .authentification("Test","test321","AGHKJKHJJJD");
-                        return null;
-                    }
-
-                    @Override
-                    protected void onPostExecute(Void aVoid) {
-                        super.onPostExecute(aVoid);
-                    }
-                };
-
-                asyncTask.execute(new ResultTO());
-*/
-
                 break;
         }
     }
@@ -161,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void ShowMarkers(){
 
         Cursor cursor = getContentResolver().query(TrackingProvider.URI_SAVE_POSITION, null, null, null, null);
+        ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
 
         if(cursor != null){
 
@@ -171,7 +169,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Double tempLat = cursor.getDouble(1);
                 Double tempLng = cursor.getDouble(2);
                 mapFragment.addMarker(tempLat, tempLng);
+                latLngs.add(new LatLng(tempLat, tempLng));
             }
+
+            if(latLngs.size() > 2){
+                DrawRouteWithList(latLngs);
+                setInterfacePointsList(new InterfacePointsList() {
+                    @Override
+                    public void getPointsList(List<LatLng> latLngs) {
+                        Log.e("ArrayList", latLngs.toString());
+                    }
+                });
+            }
+
         }
     }
 
@@ -191,11 +201,128 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 broadCLatitude = intent.getStringExtra(MapFragment.PROGRESS_LATITUDE);
                 broadCLongitude = intent.getStringExtra(MapFragment.PROGRESS_LONGITUDE);
 
-                mapFragment.moveTo(Double.valueOf(broadCLatitude), Double.valueOf(broadCLongitude), true);
+                //mapFragment.moveTo(Double.valueOf(broadCLatitude), Double.valueOf(broadCLongitude), true);
                 mapFragment.addMarker(Double.valueOf(broadCLatitude), Double.valueOf(broadCLongitude));
 
             }
             Log.e("BROADCAST _CONTENT", "RECEIVED");
         }
+    }
+
+
+
+    private ArrayList<Polyline> polylines;
+    ArrayList<Polyline> newPolylines;
+
+    private Marker tempOrigin;
+    private Marker tempDestino;
+    List<LatLng> tempPoints;
+
+    public void DrawRouteWithList(final ArrayList<LatLng> latLngs2 ) {
+
+       final ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
+        latLngs.add(new LatLng(-12.121029, -77.036852));
+        latLngs.add(new LatLng(-12.120748, -77.037030));
+        latLngs.add(new LatLng(-12.120249, -77.036852));
+        latLngs.add(new LatLng(-12.119207, -77.036839));
+        latLngs.add(new LatLng(-12.116800, -77.035665));
+        latLngs.add(new LatLng(-12.115914, -77.032909));
+        latLngs.add(new LatLng(-12.113999, -77.032361));
+        latLngs.add(new LatLng(-12.112677, -77.029885));
+
+
+        final ProgressDialog dialog;
+        dialog = new ProgressDialog(MainActivity.this);
+        dialog.setTitle("Por favor espere ...");
+        dialog.show();
+
+        Routing routing = new Routing.Builder()
+                .travelMode(AbstractRouting.TravelMode.DRIVING)
+                .withListener(new RoutingListener() {
+                    @Override
+                    public void onRoutingFailure() {
+                    }
+
+                    @Override
+                    public void onRoutingStart() {
+                    }
+
+                    @Override
+                    public void onRoutingSuccess(ArrayList<Route> arrayList, int i) {
+
+                        mapFragment.googleMap.clear();
+                        newPolylines = new ArrayList<Polyline>();
+
+                        LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+                        boundsBuilder.include(latLngs.get(0));
+                        boundsBuilder.include(latLngs.get(latLngs.size()-1));
+
+                        LatLngBounds bounds = boundsBuilder.build();
+                        mapFragment.googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0));
+
+                        MarkerOptions options = new MarkerOptions();
+                        options.position(latLngs.get(0));
+                        options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_marker));
+                        tempOrigin = mapFragment.googleMap.addMarker(options);
+
+                        // End marker
+                        options = new MarkerOptions();
+                        options.position(latLngs.get(latLngs.size()-1));
+                        options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher));
+                        tempDestino = mapFragment.googleMap.addMarker(options);
+
+                        if (newPolylines.size() > 0) {
+                            for (Polyline poly : polylines) {
+                                poly.remove();
+                            }
+                        }
+
+                        newPolylines = new ArrayList<>();
+                        //add route(s) to the map.
+                        for (int ii = 0; ii < arrayList.size(); ii++) {
+
+                            PolylineOptions polyOptions = new PolylineOptions();
+                            polyOptions.color(Color.rgb(150, 40, 27));
+                            polyOptions.width(9);
+                            polyOptions.addAll(arrayList.get(ii).getPoints());
+
+                            tempPoints = new ArrayList<LatLng>();
+                            tempPoints = arrayList.get(ii).getPoints();
+
+                            Polyline polyline = mapFragment.googleMap.addPolyline(polyOptions);
+                            newPolylines.add(polyline);
+                        }
+                        interfacePointsList.getPointsList(tempPoints);
+                        dialog.dismiss();
+                    }
+
+                    @Override
+                    public void onRoutingCancelled() {
+                        dialog.dismiss();
+                    }
+                })
+                .waypoints(latLngs)
+                .build();
+        routing.execute();
+
+    }
+
+
+    /**
+     * Interface
+     */
+
+    private InterfacePointsList interfacePointsList;
+
+    public interface InterfacePointsList{
+        void getPointsList(List<LatLng> latLngs);
+    }
+
+    public InterfacePointsList getInterfacePointsList() {
+        return interfacePointsList;
+    }
+
+    public void setInterfacePointsList(InterfacePointsList interfacePointsList) {
+        this.interfacePointsList = interfacePointsList;
     }
 }
