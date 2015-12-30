@@ -36,7 +36,7 @@ public class TrackingService extends Service {
 
     private static final int ONE_MINUTES = 1000 * 60 * 1;
     private static final int INIT_TIME = 5000;
-    private static final int SAMPLE_TIME = 1000 * 10;
+    private static final int SAMPLE_TIME = 1000 * 15;
     private static final int GET_INFO_TIME = 1000 * 4;
 
     private static final int MULTIPLICATOR = 100000000;
@@ -97,7 +97,7 @@ public class TrackingService extends Service {
                 Log.e("SamplePeriod", "Stop");
                 //handlerSampleLocation.removeCallbacks(runnableSampleLocation);
 
-                //StartlocationService();
+                StartlocationService();
 
                 handlerGetDataPeriod.postDelayed(runnableGetDataPeriod, GET_INFO_TIME);
                 Log.e("GetDataPeriod", "Start");
@@ -109,6 +109,7 @@ public class TrackingService extends Service {
             public void run() {
                 Log.e("GetDataPeriod", "Stop");
                 //handlerGetDataPeriod.removeCallbacks(runnableGetDataPeriod);
+                StopLocationService();
 
                 handlerSampleLocation.postDelayed(runnableSampleLocation, SAMPLE_TIME);
                 Log.e("SamplePeriod", "Start");
@@ -228,7 +229,7 @@ public class TrackingService extends Service {
                     deltaLat = Math.abs(location.getLatitude() - tempSaveLastLat);
                     deltaLng = Math.abs(location.getLongitude() - tempSaveLastLng);
 
-                    if ((deltaLat > 0.00004) || (deltaLng > 0.00004)) {
+                    if ((deltaLat > 0.00002) || (deltaLng > 0.00002)) {
 
                         if (isMoving) {
                             Log.e("isMoving", "TRUE");
@@ -337,7 +338,7 @@ public class TrackingService extends Service {
     private void StartlocationService() {
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        locationManager.getProvider(locationManager.getBestProvider(createCoarseCriteria(), true));
+        //locationManager.getProvider(locationManager.getBestProvider(createCoarseCriteria(), true));
 
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerNetwork);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
@@ -456,7 +457,7 @@ public class TrackingService extends Service {
 
         // Check whether the new location fix is more or less accurate
         int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
-        boolean isLessAccurate = (0 < accuracyDelta) && (accuracyDelta < 40);
+        boolean isLessAccurate = (0 < accuracyDelta) && (accuracyDelta < 45);
         boolean isMoreAccurate = (-15 < accuracyDelta) && (accuracyDelta < 0);
         boolean isSignificantlyLessAccurate = accuracyDelta > 100;
 
@@ -516,7 +517,7 @@ public class TrackingService extends Service {
         deltaLat = Math.abs(tempOriginLat - tempDestinoLat);
         deltaLng = Math.abs(tempOriginLng - tempDestinoLng);
 
-        if ((1E-5 > deltaLat) || (deltaLng < 1E-5)) {
+        if ((1E-4 > deltaLat) || (1E-4 > deltaLng)) {
 
             return true;
         }
