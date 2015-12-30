@@ -39,6 +39,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 import java.util.List;
 
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.GpsConstants;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.provider.TrackingProvider;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.service.TrackingService;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.fragment.MapFragment;
@@ -95,7 +96,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         getPositionReceiver = new getPositionReceiver();
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(MapFragment.POSITION_ACTION);
+        intentFilter.addAction(GpsConstants.POSITION_ACTION);
+        intentFilter.addAction(GpsConstants.GPS_STOPPED);
         registerReceiver(getPositionReceiver, intentFilter);
         Log.e("BROADCAST_FRAGM", "REGISTER");
         super.onResume();
@@ -114,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch(view.getId()){
 
             case R.id.act_main_start:
+                //startService(new Intent(MainActivity.this, TrackingService.class));
 
                 final LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -196,15 +199,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction() == MapFragment.POSITION_ACTION) {
 
-                broadCLatitude = intent.getStringExtra(MapFragment.PROGRESS_LATITUDE);
-                broadCLongitude = intent.getStringExtra(MapFragment.PROGRESS_LONGITUDE);
+            switch(intent.getAction()){
 
-                //mapFragment.moveTo(Double.valueOf(broadCLatitude), Double.valueOf(broadCLongitude), true);
-                mapFragment.addMarker(Double.valueOf(broadCLatitude), Double.valueOf(broadCLongitude));
+                case GpsConstants.POSITION_ACTION:
+                    broadCLatitude = intent.getStringExtra(GpsConstants.PROGRESS_LATITUDE);
+                    broadCLongitude = intent.getStringExtra(GpsConstants.PROGRESS_LONGITUDE);
 
+                    //mapFragment.moveTo(Double.valueOf(broadCLatitude), Double.valueOf(broadCLongitude), true);
+                    mapFragment.addMarker(Double.valueOf(broadCLatitude), Double.valueOf(broadCLongitude));
+                    break;
+
+                case GpsConstants.GPS_STOPPED:
+
+                        AlertDialog.Builder b = new AlertDialog.Builder(MainActivity.this);
+                        final AlertDialog create = b.create();
+                        create.setTitle(getResources().getString(R.string.GPS_error_title));
+                        create.setCancelable(true);
+                        create.setMessage(getResources().getString(R.string.GPS_error));
+                        create.setButton(getResources().getString(R.string.lblOK),
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        create.cancel();
+                                    }
+                                });
+                        create.show();
+
+
+                    break;
             }
+
             Log.e("BROADCAST _CONTENT", "RECEIVED");
         }
     }

@@ -2,6 +2,7 @@ package smoothcombtt.xpo.com.gpstrack.TrackingModule.service;
 
 import android.app.Service;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -95,7 +96,6 @@ public class TrackingService extends Service {
             @Override
             public void run() {
                 Log.e("SamplePeriod", "Stop");
-                //handlerSampleLocation.removeCallbacks(runnableSampleLocation);
 
                 StartlocationService();
 
@@ -108,7 +108,7 @@ public class TrackingService extends Service {
             @Override
             public void run() {
                 Log.e("GetDataPeriod", "Stop");
-                //handlerGetDataPeriod.removeCallbacks(runnableGetDataPeriod);
+
                 StopLocationService();
 
                 handlerSampleLocation.postDelayed(runnableSampleLocation, SAMPLE_TIME);
@@ -180,7 +180,7 @@ public class TrackingService extends Service {
         @Override
         public void onSensorChanged(SensorEvent sensorEvent) {
 
-            if ((Math.abs(tempX - sensorEvent.values[0]) > 0.5) || (Math.abs(tempY - sensorEvent.values[1]) > 0.5) || (Math.abs(tempZ - sensorEvent.values[2]) > 0.5)) {
+            if ((Math.abs(tempX - sensorEvent.values[0]) > 0.8) || (Math.abs(tempY - sensorEvent.values[1]) > 0.8) || (Math.abs(tempZ - sensorEvent.values[2]) > 0.8)) {
                 tempX = sensorEvent.values[0];
                 tempY = sensorEvent.values[1];
                 tempZ = sensorEvent.values[2];
@@ -328,7 +328,18 @@ public class TrackingService extends Service {
 
         @Override
         public void onProviderDisabled(String s) {
+            /*final LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
 
+            }
+            else{
+                stopSelf();
+                Log.e("Gps", "UnEnable");
+            }*/
+
+            Intent intentGpsDisEnable = new Intent(GpsConstants.GPS_STOPPED);
+            intentGpsDisEnable.addFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
+            sendBroadcast(intentGpsDisEnable);
         }
     };
 
@@ -416,9 +427,9 @@ public class TrackingService extends Service {
                 .edit().putString(GpsConstants.SHARE_POSITION_TRACK_LNG, String.valueOf(newLocation.getLongitude())).commit();
 
 
-        Intent intentTestService = new Intent(MapFragment.POSITION_ACTION);
-        intentTestService.putExtra(MapFragment.PROGRESS_LATITUDE, String.valueOf(newLocation.getLatitude()));
-        intentTestService.putExtra(MapFragment.PROGRESS_LONGITUDE, String.valueOf(newLocation.getLongitude()));
+        Intent intentTestService = new Intent(GpsConstants.POSITION_ACTION);
+        intentTestService.putExtra(GpsConstants.PROGRESS_LATITUDE, String.valueOf(newLocation.getLatitude()));
+        intentTestService.putExtra(GpsConstants.PROGRESS_LONGITUDE, String.valueOf(newLocation.getLongitude()));
         intentTestService.addFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
         sendBroadcast(intentTestService);
 

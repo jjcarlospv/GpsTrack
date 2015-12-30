@@ -34,10 +34,6 @@ import smoothcombtt.xpo.com.gpstrack.R;
 public class MapFragment extends com.google.android.gms.maps.MapFragment implements OnMapReadyCallback, GoogleMap.OnMyLocationChangeListener, GoogleMap.OnMyLocationButtonClickListener {
 
 
-    public static final String POSITION_ACTION = "com.example.jean.POSITION";
-    public static final String PROGRESS_LONGITUDE = "longitude";
-    public static final String PROGRESS_LATITUDE = "latitude";
-
     public GoogleMap googleMap;
     private MapFragmentInterface mapFragmentInterface;
     private static boolean currPos = true;

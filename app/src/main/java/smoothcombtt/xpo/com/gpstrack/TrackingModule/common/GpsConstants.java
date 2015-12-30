@@ -12,4 +12,10 @@ public class GpsConstants {
     public static final String SHARE_POSITION_TRACK_LNG = SHARE_POSITION_TRACK + "/"+"TrackLng";
     public static final String SHARE_POSITION_TRACK_ACY = SHARE_POSITION_TRACK + "/"+"TrackAcy";
 
+    public static final String POSITION_ACTION = "com.example.jean.POSITION";
+    public static final String PROGRESS_LONGITUDE = "longitude";
+    public static final String PROGRESS_LATITUDE = "latitude";
+
+    public static final String GPS_STOPPED = "GpsStopped";
+
 }
