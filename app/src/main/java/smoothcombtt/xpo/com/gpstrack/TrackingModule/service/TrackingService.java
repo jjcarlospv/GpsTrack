@@ -37,8 +37,8 @@ public class TrackingService extends Service {
 
     private static final int ONE_MINUTES = 1000 * 60 * 1;
     private static final int INIT_TIME = 5000;
-    private static final int SAMPLE_TIME = 1000 * 15;
-    private static final int GET_INFO_TIME = 1000 * 4;
+    private static final int SAMPLE_TIME = 1000 * 10;
+    private static final int GET_INFO_TIME = 1000 * 7;
 
     private static final int MULTIPLICATOR = 100000000;
     private static final Double DIVIDER = 100000000.0;
@@ -67,6 +67,10 @@ public class TrackingService extends Service {
 
     private boolean firstTime = false;
     private boolean firstTimeNetwork = false;
+
+    //Variables para indicar la calidad del accuracy del Gps
+    private static boolean isGoodGps = false;
+    private static boolean isGoodNetwork = false;
 
     @Nullable
     @Override
@@ -205,49 +209,64 @@ public class TrackingService extends Service {
         @Override
         public void onLocationChanged(Location location) {
 
+            Location location1 = new Location(LocationManager.GPS_PROVIDER);
+            location1.setLatitude(-12.121106);
+            location1.setLongitude(-77.036827);
+
+            Location location2 = new Location(LocationManager.GPS_PROVIDER);
+            location2.setLatitude(-12.120298);
+            location2.setLongitude(-77.036816);
+            Log.e("Distance", String.valueOf(TrackingService.distance(location1, location2)));
+
             if (firstTimeNetwork) {
                 currentNETLocation = location;
                 SaveLocation(location);
                 firstTimeNetwork = false;
             }
 
-            if (isBetterLocation(location, currentNETLocation)) {
+            if(isGoodGps){
+                if (isBetterLocation(location, currentNETLocation, LocationManager.NETWORK_PROVIDER)) {
 
-                if (isNearToNextPosition(currentNETLocation, location)) {
+                    if (isNearToNextPosition(currentNETLocation, location)) {
 
-                    Double tempSaveLastLat = 0.0;
-                    Double tempSaveLastLng = 0.0;
-                    Double deltaLat = 0.0;
-                    Double deltaLng = 0.0;
+                        Double tempSaveLastLat = 0.0;
+                        Double tempSaveLastLng = 0.0;
+                        Double deltaLat = 0.0;
+                        Double deltaLng = 0.0;
 
-                    tempSaveLastLat = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
-                            .getString(GpsConstants.SHARE_POSITION_TRACK_LAT, "0.0"));
+                        tempSaveLastLat = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
+                                .getString(GpsConstants.SHARE_POSITION_TRACK_LAT, "0.0"));
 
-                    tempSaveLastLng = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
-                            .getString(GpsConstants.SHARE_POSITION_TRACK_LNG, "0.0"));
+                        tempSaveLastLng = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
+                                .getString(GpsConstants.SHARE_POSITION_TRACK_LNG, "0.0"));
 
-                    deltaLat = Math.abs(location.getLatitude() - tempSaveLastLat);
-                    deltaLng = Math.abs(location.getLongitude() - tempSaveLastLng);
+                        deltaLat = Math.abs(location.getLatitude() - tempSaveLastLat);
+                        deltaLng = Math.abs(location.getLongitude() - tempSaveLastLng);
 
-                    if ((deltaLat > 0.00002) || (deltaLng > 0.00002)) {
+                        if ((deltaLat > 0.00002) || (deltaLng > 0.00002)) {
 
-                        if (isMoving) {
-                            Log.e("isMoving", "TRUE");
-                            currentNETLocation = location;
-                            SaveLocation(location);
-                            Log.e("NETWORK", String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
-                        } else {
-                            Log.e("isMoving", "FALSE");
+                            if (isMoving) {
+                                Log.e("isMoving", "TRUE");
+                                currentNETLocation = location;
+                                SaveLocation(location);
+                                Log.e("NETWORK", String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
+                            } else {
+                                Log.e("isMoving", "FALSE");
+                            }
                         }
+
+                    } else {
+                        Log.e("Distance", "NETWORK" + "/" + "FAR:" + String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
                     }
 
                 } else {
-                    Log.e("Distance", "NETWORK" + "/" + "FAR:" + String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
+                    Log.e("DiscardLoc", "NETWORK" + "/" + String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
                 }
-
-            } else {
-                Log.e("DiscardLoc", "NETWORK" + "/" + String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
+            }else{
+                Log.e("GPS:", "BAD SIGNAL");
             }
+
+
         }
 
         @Override
@@ -276,7 +295,7 @@ public class TrackingService extends Service {
                 firstTime = false;
             }
 
-            if (isBetterLocation(location, currentLocation)) {
+            if (isBetterLocation(location, currentLocation, LocationManager.GPS_PROVIDER)) {
 
                 if (isNearToNextPosition(currentLocation, location)) {
 
@@ -427,10 +446,14 @@ public class TrackingService extends Service {
         getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
                 .edit().putString(GpsConstants.SHARE_POSITION_TRACK_LNG, String.valueOf(newLocation.getLongitude())).commit();
 
+        getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
+                .edit().putString(GpsConstants.SHARE_POSITION_TRACK_SPEED, String.valueOf(newLocation.getSpeed())).commit();
+
 
         Intent intentTestService = new Intent(GpsConstants.POSITION_ACTION);
         intentTestService.putExtra(GpsConstants.PROGRESS_LATITUDE, String.valueOf(newLocation.getLatitude()));
         intentTestService.putExtra(GpsConstants.PROGRESS_LONGITUDE, String.valueOf(newLocation.getLongitude()));
+        intentTestService.putExtra(GpsConstants.PROGRESS_SPEED, String.valueOf(newLocation.getSpeed()));
         intentTestService.addFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
         sendBroadcast(intentTestService);
 
@@ -446,7 +469,7 @@ public class TrackingService extends Service {
      * @param currentBestLocation
      * @return
      */
-    protected boolean isBetterLocation(Location location, Location currentBestLocation) {
+    protected boolean isBetterLocation(Location location, Location currentBestLocation, String prov) {
         if (currentBestLocation == null) {
             // A new location is always better than no location
             return true;
@@ -469,9 +492,19 @@ public class TrackingService extends Service {
 
         // Check whether the new location fix is more or less accurate
         int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
-        boolean isLessAccurate = (0 < accuracyDelta) && (accuracyDelta < 45);
-        boolean isMoreAccurate = (-15 < accuracyDelta) && (accuracyDelta < 0);
+        boolean isLessAccurate = (45 < accuracyDelta) && (accuracyDelta < 100);
+        boolean isMoreAccurate = (-45 < accuracyDelta) && (accuracyDelta <= 45);
         boolean isSignificantlyLessAccurate = accuracyDelta > 100;
+
+        if(prov.equals(LocationManager.GPS_PROVIDER)){
+            if(isMoreAccurate){isGoodGps = true;}
+            else{isGoodGps = false;}
+        }
+
+        if(prov.equals(LocationManager.NETWORK_PROVIDER)){
+            if(isMoreAccurate){isGoodNetwork = true;}
+            else{isGoodNetwork = false;}
+        }
 
         // Check if the old and new location are from the same provider
         boolean isFromSameProvider = isSameProvider(location.getProvider(),
@@ -480,9 +513,9 @@ public class TrackingService extends Service {
         // Determine location quality using a combination of timeliness and accuracy
         if (isMoreAccurate) {
             return true;
-        } else if (isNewer && !isLessAccurate) {
+        } else if (isNewer && isLessAccurate) {
             return true;
-        } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
+        } else if (isNewer && isSignificantlyLessAccurate && isFromSameProvider) {
             return true;
         }
         return false;
@@ -520,153 +553,55 @@ public class TrackingService extends Service {
         Double deltaLat = 0.0;
         Double deltaLng = 0.0;
 
-        tempOriginLat = Math.round(origin.getLatitude() * MULTIPLICATOR) / DIVIDER;
+        /*tempOriginLat = Math.round(origin.getLatitude() * MULTIPLICATOR) / DIVIDER;
         tempOriginLng = Math.round(origin.getLongitude() * MULTIPLICATOR) / DIVIDER;
 
         tempDestinoLat = Math.round(destino.getLatitude() * MULTIPLICATOR) / DIVIDER;
-        tempDestinoLng = Math.round(destino.getLongitude() * MULTIPLICATOR) / DIVIDER;
+        tempDestinoLng = Math.round(destino.getLongitude() * MULTIPLICATOR) / DIVIDER;*/
+
+        tempOriginLat = origin.getLatitude();
+        tempOriginLng = origin.getLongitude();
+
+        tempDestinoLat = destino.getLatitude();
+        tempDestinoLng = destino.getLongitude();
 
         deltaLat = Math.abs(tempOriginLat - tempDestinoLat);
         deltaLng = Math.abs(tempOriginLng - tempDestinoLng);
 
-        //if ((1E-4 > deltaLat) || (1E-4 > deltaLng)) {
-            if ( ((0.001 > deltaLat)&&(deltaLat > 0.000001)) || ((0.001 > deltaLng)&&(deltaLng > 0.000001))  ) {
+        if (((0.01 > deltaLat) && (deltaLat > 0.000001)) || ((0.01 > deltaLng) && (deltaLng > 0.000001))) {
             return true;
         }
 
         return false;
     }
 
-    ///////////////////////////////////////////////////////////////////////////////
+    /**
+     * Metodo para calcular distancia entre dos puntos. Requiere 2 Locations
+     *
+     * @param one
+     * @param two
+     * @return
+     */
+    private static Double distance(Location one, Location two) {
+        int R = 6371000;
+        Double dLat = toRad(two.getLatitude() - one.getLatitude());
+        Double dLon = toRad(two.getLongitude() - one.getLongitude());
+        Double lat1 = toRad(one.getLatitude());
+        Double lat2 = toRad(two.getLatitude());
+        Double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+        Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        Double d = R * c;
+
+        // Redondear a 3 decimales
+        int dec = 3;
+        d = Math.round(d*Math.pow(10,3))/ Math.pow(10, 3);
+        return d;
+    }
+
+    private static double toRad(Double d) {
+        return d * Math.PI / 180;
+    }
 }
 
 
-
-    /*
-    private void GetArraypositions(Location newLocationTemp, Location oldLocationTemp, ArrayList<Location> arrayLocTemp, String Name) {
-
-        if (firstTime) {
-            oldLocationTemp = newLocationTemp;
-            SaveLocation(newLocationTemp);
-            firstTime = false;
-        }
-
-        if (isBetterLocation(newLocationTemp, oldLocationTemp)) {
-
-            if (isNearToNextPosition(oldLocationTemp, newLocationTemp)) {
-
-                if (arrayLocTemp != null) {
-
-                    arrayLocTemp.add(newLocationTemp);
-                    timesLoc++;
-
-                    oldLocationTemp = newLocationTemp;
-                    Log.e(Name, String.valueOf(newLocationTemp.getLatitude()) + "," + String.valueOf(newLocationTemp.getLongitude()) + "/" + String.valueOf(newLocationTemp.getAccuracy()));
-                    Log.e("Cuantity", String.valueOf(timesLoc));
-                    Log.e("Distance", "NEAR");
-
-                } else {
-                    arrayLocTemp = new ArrayList<Location>();
-                }
-
-
-
-
-                // Guardamos si el punto es diferente al anterior guardado
-
-                Double tempSaveLastLat = 0.0;
-                Double tempSaveLastLng = 0.0;
-                Double deltaLat = 0.0;
-                Double deltaLng = 0.0;
-
-                tempSaveLastLat = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
-                        .getString(GpsConstants.SHARE_POSITION_TRACK_LAT, "0.0"));
-
-                tempSaveLastLng = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
-                        .getString(GpsConstants.SHARE_POSITION_TRACK_LNG, "0.0"));
-
-                deltaLat = Math.abs(newLocationTemp.getLatitude() - tempSaveLastLat);
-                deltaLng = Math.abs(newLocationTemp.getLongitude() - tempSaveLastLng);
-
-                if ((deltaLat > 0.0001) && (deltaLng > 0.0001)) {
-
-                    if (isMoving) {
-                        Log.e("isMoving", "TRUE");
-                        oldLocationTemp = newLocationTemp;
-                        SaveLocation(newLocationTemp);
-                        Log.e(Name, String.valueOf(newLocationTemp.getLatitude()) + "," + String.valueOf(newLocationTemp.getLongitude()) + "/" + String.valueOf(newLocationTemp.getAccuracy()));
-                    } else {
-                        Log.e("isMoving", "FALSE");
-                    }
-                }
-
-
-            } else {
-                Log.e("Distance", Name + "/" + "FAR:" + String.valueOf(newLocationTemp.getLatitude()) + "," + String.valueOf(newLocationTemp.getLongitude()) + "/" + String.valueOf(newLocationTemp.getAccuracy()));
-            }
-
-        } else {
-            Log.e("DiscardLoc", Name + "/" +  String.valueOf(newLocationTemp.getLatitude()) + "," + String.valueOf(newLocationTemp.getLongitude()) + "/" + String.valueOf(newLocationTemp.getAccuracy()));
-        }
-    }
-*/
-
-
-/**
- * Metodo para almacenar una posicion aceptable
- */
-/*
-    private void SaveGoodPosition(final ArrayList<Location> arrayLoc) {
-
-        Double tempSaveLastLat = 0.0;
-        Double tempSaveLastLng = 0.0;
-        Double deltaLat = 0.0;
-        Double DeltaLng = 0.0;
-
-        if ((arrayLoc != null) && (timesLoc > 0)) {
-
-            tempLat = 0.0;
-            tempLng = 0.0;
-
-            for (int i = 0; i < arrayLoc.size(); i++) {
-
-                tempLat = tempLat + arrayLoc.get(i).getLatitude();
-                tempLng = tempLng + arrayLoc.get(i).getLongitude();
-            }
-
-            tempLat = tempLat / arrayLoc.size();
-            tempLng = tempLng / arrayLoc.size();
-
-            tempLat = Math.round(tempLat * MULTIPLICATOR) / DIVIDER;
-            tempLng = Math.round(tempLng * MULTIPLICATOR) / DIVIDER;
-
-            newLocation.setLatitude(tempLat);
-            newLocation.setLongitude(tempLng);
-
-            // Guardamos si el punto es diferente al anterior guardado
-
-            tempSaveLastLat = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
-                    .getString(GpsConstants.SHARE_POSITION_TRACK_LAT, "0.0"));
-
-            tempSaveLastLng = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
-                    .getString(GpsConstants.SHARE_POSITION_TRACK_LNG, "0.0"));
-
-            deltaLat = Math.abs(newLocation.getLatitude() - tempSaveLastLat);
-            DeltaLng = Math.abs(newLocation.getLongitude() - tempSaveLastLng);
-
-            if ((deltaLat > 0.00001) && (DeltaLng > 0.00001)) {
-
-                if (isMoving) {
-                    Log.e("isMoving", "TRUE");
-                    SaveLocation(newLocation);
-                } else {
-                    Log.e("isMoving", "FALSE");
-                }
-            }
-
-            timesLoc = 0;
-            //arrayLoc = null;
-
-        }
-    }
-*/

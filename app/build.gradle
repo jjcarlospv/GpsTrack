@@ -29,4 +29,7 @@ dependencies {
     compile files('libs/ksoap2-android-assembly-2.6.5-jar-with-dependencies.jar')
     compile 'com.github.jd-alexander:library:1.0.7'
 
+    // Speedometer
+    compile 'com.cardiomood.android:android-widgets:0.1.1'
+
 }

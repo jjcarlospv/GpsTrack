@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 
 
+import com.cardiomood.android.controls.gauge.SpeedometerGauge;
 import com.directions.route.AbstractRouting;
 import com.directions.route.Route;
 import com.directions.route.Routing;
@@ -59,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MapFragment mapFragment;
     private getPositionReceiver getPositionReceiver;
 
+    private SpeedometerGauge speedometer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,13 +86,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void getMapStatus(int i) {
 
-                    switch(i){
-                        case 1:
-                            ShowMarkers();
-                            break;
-                    }
+                switch (i) {
+                    case 1:
+                        ShowMarkers();
+                        break;
+                }
             }
         });
+
+        speedometer = (SpeedometerGauge)findViewById(R.id.speedometer);
+        // configure value range and ticks
+        speedometer.setMaxSpeed(300);
+        speedometer.setMajorTickStep(30);
+        speedometer.setMinorTicks(2);
+
+        // Configure value range colors
+        speedometer.addColoredRange(30, 140, Color.GREEN);
+        speedometer.addColoredRange(140, 180, Color.YELLOW);
+        speedometer.addColoredRange(180, 400, Color.RED);
+
+
+        /*speedometer.setLabelConverter(new SpeedometerGauge.LabelConverter() {
+            @Override
+            public String getLabelFor(double progress, double maxProgress) {
+                Log.e("SPEED", String.valueOf(progress));
+                return String.valueOf((int) Math.round(progress));
+            }
+        });*/
+
     }
 
     @Override
@@ -108,6 +132,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //unregisterReceiver(getPositionReceiver);
         //Log.e("BROADCAST_FRAGM", "UNREGISTER");
         super.onPause();
+    }
+
+    @Override
+    public void onBackPressed() {
+
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+        //builder.setTitle(getResources().getString(R.string.push_title));
+        builder.setMessage(getResources().getString(R.string.backpressed_message));
+        builder.setCancelable(false);
+        builder.setPositiveButton(getResources().getString(R.string.btn_acept), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                stopService(new Intent(MainActivity.this, TrackingService.class));
+                finish();
+            }
+        });
+
+        builder.setNegativeButton(getResources().getString(R.string.btn_cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+
+        builder.show();
+
     }
 
     @Override
@@ -161,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void ShowMarkers(){
 
         Cursor cursor = getContentResolver().query(TrackingProvider.URI_SAVE_POSITION, null, null, null, null);
-        ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
+        final ArrayList<LatLng> latLngsMain = new ArrayList<LatLng>();
 
         if(cursor != null){
 
@@ -172,17 +224,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Double tempLat = cursor.getDouble(1);
                 Double tempLng = cursor.getDouble(2);
                 mapFragment.addMarker(tempLat, tempLng);
-                latLngs.add(new LatLng(tempLat, tempLng));
+                latLngsMain.add(new LatLng(tempLat, tempLng));
             }
 
-            if(latLngs.size() > 2){
-                //DrawRouteWithList(latLngs);
-                /*setInterfacePointsList(new InterfacePointsList() {
+            if((latLngsMain.size() > 2)&&(latLngsMain != null)){
+                DrawRouteWithList(latLngsMain);
+                setInterfacePointsList(new InterfacePointsList() {
                     @Override
                     public void getPointsList(List<LatLng> latLngs) {
+
+                        for(int j = 0; j<latLngs.size(); j++){
+
+                            mapFragment.googleMap.addMarker(new MarkerOptions()
+                                    .position(latLngs.get(j))
+                                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_sweet_marker)));
+                        }
+
+                        for(int i = 0; i < latLngsMain.size(); i++){
+                            mapFragment.addMarker(latLngsMain.get(i).latitude, latLngsMain.get(i).longitude);
+                        }
+
                         Log.e("ArrayList", latLngs.toString());
                     }
-                });*/
+                });
             }
 
         }
@@ -195,6 +259,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         String broadCLatitude;
         String broadCLongitude;
+        String broadCSpeed;
         int posTime = 0;
 
         @Override
@@ -205,9 +270,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 case GpsConstants.POSITION_ACTION:
                     broadCLatitude = intent.getStringExtra(GpsConstants.PROGRESS_LATITUDE);
                     broadCLongitude = intent.getStringExtra(GpsConstants.PROGRESS_LONGITUDE);
-
+                    broadCSpeed = intent.getStringExtra(GpsConstants.PROGRESS_SPEED);
                     //mapFragment.moveTo(Double.valueOf(broadCLatitude), Double.valueOf(broadCLongitude), true);
                     mapFragment.addMarker(Double.valueOf(broadCLatitude), Double.valueOf(broadCLongitude));
+
+                    if(speedometer != null){
+                        speedometer.setSpeed(Double.valueOf(broadCSpeed),true);
+                    }
+
                     break;
 
                 case GpsConstants.GPS_STOPPED:
@@ -225,8 +295,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     }
                                 });
                         create.show();
-
-
                     break;
             }
 
@@ -243,9 +311,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Marker tempDestino;
     List<LatLng> tempPoints;
 
-    public void DrawRouteWithList(final ArrayList<LatLng> latLngs2 ) {
+    public void DrawRouteWithList(final ArrayList<LatLng> latLngs ) {
 
-       final ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
+     /*  final ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
         latLngs.add(new LatLng(-12.121029, -77.036852));
         latLngs.add(new LatLng(-12.120748, -77.037030));
         latLngs.add(new LatLng(-12.120249, -77.036852));
@@ -254,7 +322,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         latLngs.add(new LatLng(-12.115914, -77.032909));
         latLngs.add(new LatLng(-12.113999, -77.032361));
         latLngs.add(new LatLng(-12.112677, -77.029885));
-
+*/
 
         final ProgressDialog dialog;
         dialog = new ProgressDialog(MainActivity.this);
