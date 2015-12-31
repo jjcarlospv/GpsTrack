@@ -176,13 +176,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             if(latLngs.size() > 2){
-                DrawRouteWithList(latLngs);
-                setInterfacePointsList(new InterfacePointsList() {
+                //DrawRouteWithList(latLngs);
+                /*setInterfacePointsList(new InterfacePointsList() {
                     @Override
                     public void getPointsList(List<LatLng> latLngs) {
                         Log.e("ArrayList", latLngs.toString());
                     }
-                });
+                });*/
             }
 
         }

@@ -394,9 +394,10 @@ public class TrackingService extends Service {
      */
     private void StopLocationService() {
         if (locationManager != null) {
-            Log.e("LocService", "StopService");
             locationManager.removeUpdates(locationListenerNetwork);
             locationManager.removeUpdates(locationListenerGps);
+            locationManager = null;
+            Log.e("LocService", "StopService");
         }
     }
 
@@ -528,8 +529,8 @@ public class TrackingService extends Service {
         deltaLat = Math.abs(tempOriginLat - tempDestinoLat);
         deltaLng = Math.abs(tempOriginLng - tempDestinoLng);
 
-        if ((1E-4 > deltaLat) || (1E-4 > deltaLng)) {
-
+        //if ((1E-4 > deltaLat) || (1E-4 > deltaLng)) {
+            if ( ((0.001 > deltaLat)&&(deltaLat > 0.000001)) || ((0.001 > deltaLng)&&(deltaLng > 0.000001))  ) {
             return true;
         }
 
