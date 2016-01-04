@@ -18,6 +18,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.text.DateFormat;
@@ -37,8 +38,8 @@ public class TrackingService extends Service {
 
     private static final int ONE_MINUTES = 1000 * 60 * 1;
     private static final int INIT_TIME = 5000;
-    private static final int SAMPLE_TIME = 1000 * 10;
-    private static final int GET_INFO_TIME = 1000 * 7;
+    private static final int SAMPLE_TIME = 1000 * 4;
+    private static final int GET_INFO_TIME = 1000 * 4;
 
     private static final int MULTIPLICATOR = 100000000;
     private static final Double DIVIDER = 100000000.0;
@@ -243,7 +244,7 @@ public class TrackingService extends Service {
                         deltaLat = Math.abs(location.getLatitude() - tempSaveLastLat);
                         deltaLng = Math.abs(location.getLongitude() - tempSaveLastLng);
 
-                        if ((deltaLat > 0.00002) || (deltaLng > 0.00002)) {
+                        if ((deltaLat > 0.00009) || (deltaLng > 0.00009)) {
 
                             if (isMoving) {
                                 Log.e("isMoving", "TRUE");
@@ -568,7 +569,7 @@ public class TrackingService extends Service {
         deltaLat = Math.abs(tempOriginLat - tempDestinoLat);
         deltaLng = Math.abs(tempOriginLng - tempDestinoLng);
 
-        if (((0.01 > deltaLat) && (deltaLat > 0.000001)) || ((0.01 > deltaLng) && (deltaLng > 0.000001))) {
+        if (((0.01 > deltaLat) && (deltaLat > 0.000005)) || ((0.01 > deltaLng) && (deltaLng > 0.000005))) {
             return true;
         }
 
