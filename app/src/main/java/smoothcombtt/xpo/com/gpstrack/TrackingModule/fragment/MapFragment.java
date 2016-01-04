@@ -54,7 +54,6 @@ public class MapFragment extends com.google.android.gms.maps.MapFragment impleme
         googleMap.setOnMyLocationButtonClickListener(this);
         googleMap.setOnMyLocationChangeListener(this);
 
-
         interfaceMapStatus.getMapStatus(1);
 
     }
@@ -63,7 +62,7 @@ public class MapFragment extends com.google.android.gms.maps.MapFragment impleme
         final LatLng latLng = new LatLng(latitude, longitude);
         final CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(latLng)
-                .zoom(13)
+                .zoom(10)
                 .build();
         final CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
         if (animate) {

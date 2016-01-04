@@ -2,7 +2,6 @@ package smoothcombtt.xpo.com.gpstrack.TrackingModule.service;
 
 import android.app.Service;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -18,9 +17,6 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.LatLng;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,7 +24,6 @@ import java.util.Date;
 
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.GpsConstants;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.database.DataBaseHelper;
-import smoothcombtt.xpo.com.gpstrack.TrackingModule.fragment.MapFragment;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.provider.TrackingProvider;
 
 /**
@@ -48,6 +43,10 @@ public class TrackingService extends Service {
 
     private CustomSensorEventListener customSensorEventListener;
     private static Location currentLocation = null;
+    private static Location originLocation = null;
+    private static Location destinationlocation = null;
+    private static Double speedLocation = 0.0;
+
     private static Location newLocation;
     private static Location currentNETLocation = null;
     private static Location newNETLocation;
@@ -95,7 +94,8 @@ public class TrackingService extends Service {
         arrayNETLocations = new ArrayList<Location>();
         currentLocation = new Location(LocationManager.GPS_PROVIDER);
         newLocation = new Location(LocationManager.GPS_PROVIDER);
-
+        originLocation = new Location(LocationManager.GPS_PROVIDER);
+        destinationlocation = new Location(LocationManager.GPS_PROVIDER);
 
         runnableSampleLocation = new Runnable() {
             @Override
@@ -115,6 +115,14 @@ public class TrackingService extends Service {
                 Log.e("GetDataPeriod", "Stop");
 
                 StopLocationService();
+                //Calculamos la velocidad
+                speedLocation = 1000*(TrackingService.distance(originLocation, destinationlocation))/ SAMPLE_TIME;
+                originLocation = destinationlocation;
+
+                Intent intentTestService = new Intent(GpsConstants.SPEED_ACTION);
+                intentTestService.putExtra(GpsConstants.PROGRESS_SPEED, String.valueOf(speedLocation));
+                intentTestService.addFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
+                sendBroadcast(intentTestService);
 
                 handlerSampleLocation.postDelayed(runnableSampleLocation, SAMPLE_TIME);
                 Log.e("SamplePeriod", "Start");
@@ -244,7 +252,7 @@ public class TrackingService extends Service {
                         deltaLat = Math.abs(location.getLatitude() - tempSaveLastLat);
                         deltaLng = Math.abs(location.getLongitude() - tempSaveLastLng);
 
-                        if ((deltaLat > 0.00009) || (deltaLng > 0.00009)) {
+                        if ((deltaLat > 0.0005) || (deltaLng > 0.0005)) {
 
                             if (isMoving) {
                                 Log.e("isMoving", "TRUE");
@@ -287,53 +295,79 @@ public class TrackingService extends Service {
     };
 
     private LocationListener locationListenerGps = new LocationListener() {
+
+        Double tempSaveLastLat = 0.0;
+        Double tempSaveLastLng = 0.0;
+        Double tempSaveLastProv = 0.0;
+
+        String tempStringLat = "";
+        String tempStringLng = "";
+        String tempStringProv = "";
+
         @Override
         public void onLocationChanged(Location location) {
 
-            if (firstTime) {
+            tempStringLat = getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
+                    .getString(GpsConstants.SHARE_POSITION_TRACK_LAT, "0.0");
+
+            tempStringLng = getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
+                    .getString(GpsConstants.SHARE_POSITION_TRACK_LNG, "0.0");
+
+            tempStringProv = getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
+                    .getString(GpsConstants.SHARE_POSITION_TRACK_PROV, "");
+
+            tempSaveLastLat = Double.valueOf(tempStringLat);
+            tempSaveLastLng = Double.valueOf(tempStringLng);
+
+            if((tempStringLat.equals("0.0"))&&(tempStringLng.equals("0.0"))){
+                currentLocation = location;
+                originLocation = location;
+                SaveLocation(location);
+            }else{
+
+                            /*if (firstTime) {
                 currentLocation = location;
                 SaveLocation(location);
                 firstTime = false;
-            }
+            }*/
 
-            if (isBetterLocation(location, currentLocation, LocationManager.GPS_PROVIDER)) {
+                currentLocation.setLatitude(tempSaveLastLat);
+                currentLocation.setLongitude(tempSaveLastLng);
+                currentLocation.setProvider(tempStringProv);
 
-                if (isNearToNextPosition(currentLocation, location)) {
+                if (isBetterLocation(location, currentLocation, LocationManager.GPS_PROVIDER)) {
 
-                    Double tempSaveLastLat = 0.0;
-                    Double tempSaveLastLng = 0.0;
-                    Double deltaLat = 0.0;
-                    Double deltaLng = 0.0;
+                    if (isNearToNextPosition(currentLocation, location)) {
 
-                    tempSaveLastLat = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
-                            .getString(GpsConstants.SHARE_POSITION_TRACK_LAT, "0.0"));
+                        Double deltaLat = 0.0;
+                        Double deltaLng = 0.0;
 
-                    tempSaveLastLng = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
-                            .getString(GpsConstants.SHARE_POSITION_TRACK_LNG, "0.0"));
+                        deltaLat = Math.abs(location.getLatitude() - currentLocation.getLatitude());
+                        deltaLng = Math.abs(location.getLongitude() - currentLocation.getLongitude() );
 
-                    deltaLat = Math.abs(location.getLatitude() - tempSaveLastLat);
-                    deltaLng = Math.abs(location.getLongitude() - tempSaveLastLng);
+                        if ((deltaLat > 0.0004) || (deltaLng > 0.0004)) {
 
-                    if ((deltaLat > 0.00001) || (deltaLng > 0.00001)) {
-
-                        if (isMoving) {
-                            Log.e("isMoving", "TRUE");
-                            currentLocation = location;
-                            SaveLocation(location);
-                            Log.e("GPS", String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
-                        } else {
-                            Log.e("isMoving", "FALSE");
+                            if (isMoving) {
+                                Log.e("isMoving", "TRUE");
+                                SaveLocation(location);
+                                Log.e("GPS", String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
+                            } else {
+                                Log.e("isMoving", "FALSE");
+                            }
                         }
+
+
+                    } else {
+                        Log.e("Distance", "GPS" + "/" + "FAR:" + String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
                     }
 
-
                 } else {
-                    Log.e("Distance", "GPS" + "/" + "FAR:" + String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
-                }
 
-            } else {
-                Log.e("DiscardLoc", "GPS" + "/" + String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
+                    Log.e("DiscardLoc", "GPS" + "/" + String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
+                }
             }
+
+            destinationlocation = location;
         }
 
         @Override
@@ -348,18 +382,20 @@ public class TrackingService extends Service {
 
         @Override
         public void onProviderDisabled(String s) {
-            /*final LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
 
-            }
-            else{
+            if(s.equals(LocationManager.GPS_PROVIDER)){
+                Intent intentGpsDisEnable = new Intent(GpsConstants.GPS_STOPPED);
+                intentGpsDisEnable.addFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
+                sendBroadcast(intentGpsDisEnable);
+
                 stopSelf();
                 Log.e("Gps", "UnEnable");
-            }*/
+            }
+            else{
 
-            Intent intentGpsDisEnable = new Intent(GpsConstants.GPS_STOPPED);
-            intentGpsDisEnable.addFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
-            sendBroadcast(intentGpsDisEnable);
+            }
+
+
         }
     };
 
@@ -371,7 +407,7 @@ public class TrackingService extends Service {
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         //locationManager.getProvider(locationManager.getBestProvider(createCoarseCriteria(), true));
 
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerNetwork);
+        //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerNetwork);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
         Log.e("LocService", "StartService");
     }
@@ -414,7 +450,7 @@ public class TrackingService extends Service {
      */
     private void StopLocationService() {
         if (locationManager != null) {
-            locationManager.removeUpdates(locationListenerNetwork);
+            //locationManager.removeUpdates(locationListenerNetwork);
             locationManager.removeUpdates(locationListenerGps);
             locationManager = null;
             Log.e("LocService", "StopService");
@@ -448,13 +484,17 @@ public class TrackingService extends Service {
                 .edit().putString(GpsConstants.SHARE_POSITION_TRACK_LNG, String.valueOf(newLocation.getLongitude())).commit();
 
         getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
+                .edit().putString(GpsConstants.SHARE_POSITION_TRACK_PROV, String.valueOf(newLocation.getProvider())).commit();
+
+        getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
                 .edit().putString(GpsConstants.SHARE_POSITION_TRACK_SPEED, String.valueOf(newLocation.getSpeed())).commit();
 
 
         Intent intentTestService = new Intent(GpsConstants.POSITION_ACTION);
         intentTestService.putExtra(GpsConstants.PROGRESS_LATITUDE, String.valueOf(newLocation.getLatitude()));
         intentTestService.putExtra(GpsConstants.PROGRESS_LONGITUDE, String.valueOf(newLocation.getLongitude()));
-        intentTestService.putExtra(GpsConstants.PROGRESS_SPEED, String.valueOf(newLocation.getSpeed()));
+        //intentTestService.putExtra(GpsConstants.PROGRESS_PROV, String.valueOf(newLocation.getProvider()));
+        //intentTestService.putExtra(GpsConstants.PROGRESS_SPEED, String.valueOf(newLocation.getSpeed()));
         intentTestService.addFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
         sendBroadcast(intentTestService);
 
@@ -546,6 +586,10 @@ public class TrackingService extends Service {
 
     private boolean isNearToNextPosition(Location origin, Location destino) {
 
+        if(origin == null){
+            return true;
+        }
+
         Double tempOriginLat = 0.0;
         Double tempOriginLng = 0.0;
         Double tempDestinoLat = 0.0;
@@ -569,7 +613,7 @@ public class TrackingService extends Service {
         deltaLat = Math.abs(tempOriginLat - tempDestinoLat);
         deltaLng = Math.abs(tempOriginLng - tempDestinoLng);
 
-        if (((0.01 > deltaLat) && (deltaLat > 0.000005)) || ((0.01 > deltaLng) && (deltaLng > 0.000005))) {
+        if (((0.01 > deltaLat) && (deltaLat > 0.00001)) || ((0.01 > deltaLng) && (deltaLng > 0.00001))) {
             return true;
         }
 
