@@ -19,8 +19,10 @@ public class GpsConstants {
     public static final String PROGRESS_LATITUDE = POSITION_ACTION + "/" +"Latitude";
     public static final String PROGRESS_PROV = POSITION_ACTION + "/" +"Prov";
     public static final String PROGRESS_SPEED = POSITION_ACTION + "/" +"Speed";
+    public static final String PROGRESS_DISTANCE = POSITION_ACTION + "/" +"Distance";
 
     public static final String SPEED_ACTION = "com.example.jean.SPEED";
+    public static final String DISTANCE_ACTION = "com.example.jean.DISTANCE";
 
     public static final String GPS_STOPPED = "GpsStopped";
 

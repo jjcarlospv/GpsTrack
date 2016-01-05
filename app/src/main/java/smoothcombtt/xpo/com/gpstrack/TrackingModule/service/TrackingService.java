@@ -304,6 +304,8 @@ public class TrackingService extends Service {
         String tempStringLng = "";
         String tempStringProv = "";
 
+        Double tempDistance = 0.0;
+
         @Override
         public void onLocationChanged(Location location) {
 
@@ -345,11 +347,21 @@ public class TrackingService extends Service {
                         deltaLat = Math.abs(location.getLatitude() - currentLocation.getLatitude());
                         deltaLng = Math.abs(location.getLongitude() - currentLocation.getLongitude() );
 
-                        if ((deltaLat > 0.0004) || (deltaLng > 0.0004)) {
+                        tempDistance = TrackingService.distance(currentLocation, location);
+
+                        Intent intentTestService = new Intent(GpsConstants.DISTANCE_ACTION);
+                        intentTestService.putExtra(GpsConstants.PROGRESS_DISTANCE, String.valueOf(tempDistance));
+                        intentTestService.addFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
+                        sendBroadcast(intentTestService);
+
+                        destinationlocation = location;
+
+                        if ((deltaLat > 0.0004) || (deltaLng > 0.0004) || (tempDistance > 60)) {
 
                             if (isMoving) {
                                 Log.e("isMoving", "TRUE");
                                 SaveLocation(location);
+
                                 Log.e("GPS", String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
                             } else {
                                 Log.e("isMoving", "FALSE");
@@ -366,8 +378,6 @@ public class TrackingService extends Service {
                     Log.e("DiscardLoc", "GPS" + "/" + String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
                 }
             }
-
-            destinationlocation = location;
         }
 
         @Override
@@ -613,7 +623,7 @@ public class TrackingService extends Service {
         deltaLat = Math.abs(tempOriginLat - tempDestinoLat);
         deltaLng = Math.abs(tempOriginLng - tempDestinoLng);
 
-        if (((0.01 > deltaLat) && (deltaLat > 0.00001)) || ((0.01 > deltaLng) && (deltaLng > 0.00001))) {
+        if (((0.01 > deltaLat) && (deltaLat > 0.00002)) || ((0.01 > deltaLng) && (deltaLng > 0.00002))) {
             return true;
         }
 

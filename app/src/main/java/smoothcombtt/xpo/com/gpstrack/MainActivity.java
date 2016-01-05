@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button act_main_new_ruta;
     private Button act_main_clean_data;
     private TextView act_main_speed;
+    private TextView act_main_distance;
 
     private FrameLayout container;
     private MapFragment mapFragment;
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         act_main_new_ruta  = (Button)findViewById(R.id.act_main_new_ruta);
         act_main_clean_data = (Button)findViewById(R.id.act_main_clean_data);
         act_main_speed = (TextView)findViewById(R.id.act_main_speed);
+        act_main_distance = (TextView)findViewById(R.id.act_main_distance);
 
         act_main_start.setOnClickListener(this);
         act_main_stop.setOnClickListener(this);
@@ -129,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         intentFilter.addAction(GpsConstants.POSITION_ACTION);
         intentFilter.addAction(GpsConstants.GPS_STOPPED);
         intentFilter.addAction(GpsConstants.SPEED_ACTION);
+        intentFilter.addAction(GpsConstants.DISTANCE_ACTION);
         registerReceiver(getPositionReceiver, intentFilter);
         Log.e("BROADCAST_FRAGM", "REGISTER");
         super.onResume();
@@ -288,6 +291,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String broadCLongitude;
         String broadCSpeed;
         String braodCSpeedAction;
+        String braodCDistance;
         int posTime = 0;
 
         @Override
@@ -302,9 +306,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     //mapFragment.moveTo(Double.valueOf(broadCLatitude), Double.valueOf(broadCLongitude), true);
                     mapFragment.addMarker(Double.valueOf(broadCLatitude), Double.valueOf(broadCLongitude));
 
-                    if(speedometer != null){
-                        speedometer.setSpeed(Double.valueOf(broadCSpeed),true);
-                    }
+                    //if(speedometer != null){
+                    //    speedometer.setSpeed(Double.valueOf(broadCSpeed),true);
+                    //}
 
                     break;
 
@@ -328,6 +332,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 case GpsConstants.SPEED_ACTION:
                     braodCSpeedAction = intent.getStringExtra(GpsConstants.PROGRESS_SPEED);
                     act_main_speed.setText(braodCSpeedAction);
+                    break;
+
+                case GpsConstants.DISTANCE_ACTION:
+                    braodCDistance = intent.getStringExtra(GpsConstants.PROGRESS_DISTANCE);
+                    act_main_distance.setText(braodCDistance);
                     break;
             }
 
