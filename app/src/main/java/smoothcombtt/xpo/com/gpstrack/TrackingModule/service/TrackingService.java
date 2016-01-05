@@ -543,8 +543,8 @@ public class TrackingService extends Service {
 
         // Check whether the new location fix is more or less accurate
         int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
-        boolean isLessAccurate = (45 < accuracyDelta) && (accuracyDelta < 100);
-        boolean isMoreAccurate = (-45 < accuracyDelta) && (accuracyDelta <= 45);
+        boolean isLessAccurate = (50 < accuracyDelta) && (accuracyDelta < 100);
+        boolean isMoreAccurate = (-45 < accuracyDelta) && (accuracyDelta <= 50);
         boolean isSignificantlyLessAccurate = accuracyDelta > 100;
 
         if(prov.equals(LocationManager.GPS_PROVIDER)){
@@ -623,7 +623,7 @@ public class TrackingService extends Service {
         deltaLat = Math.abs(tempOriginLat - tempDestinoLat);
         deltaLng = Math.abs(tempOriginLng - tempDestinoLng);
 
-        if (((0.01 > deltaLat) && (deltaLat > 0.00002)) || ((0.01 > deltaLng) && (deltaLng > 0.00002))) {
+        if (((0.1 > deltaLat) && (deltaLat > 0.00002)) || ((0.1 > deltaLng) && (deltaLng > 0.00002))) {
             return true;
         }
 

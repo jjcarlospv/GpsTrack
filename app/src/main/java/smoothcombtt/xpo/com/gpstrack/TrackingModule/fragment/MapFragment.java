@@ -81,6 +81,15 @@ public class MapFragment extends com.google.android.gms.maps.MapFragment impleme
                 .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_marker)));
         return marker;
     }
+    public Marker addMarkerWithImageSource(double lat, double lng, int img){
+
+        LatLng latLng1 = new LatLng(lat,lng);
+
+        Marker marker = googleMap.addMarker(new MarkerOptions()
+                .position(latLng1)
+                .icon(BitmapDescriptorFactory.fromResource(img)));
+        return marker;
+    }
 
     public void drawLine(final LatLng origin, final LatLng destination){
 

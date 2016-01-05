@@ -42,11 +42,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.GpsConstants;
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.Polygon;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.provider.TrackingProvider;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.service.TrackingService;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.fragment.MapFragment;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.soap.ProxyImpl;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.soap.WebServiceFactory;
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.soap.commons.Helper;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.soap.tos.ResultTO;
 
 
@@ -65,6 +67,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private getPositionReceiver getPositionReceiver;
 
     private SpeedometerGauge speedometer;
+
+
+    // Prueba Geofence
+    Polygon fence = new Polygon();
+
+    boolean insideFence = false;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 switch (i) {
                     case 1:
                         ShowMarkers();
+                        ShowGeofence();
                         break;
                 }
             }
@@ -122,6 +134,70 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });*/
 
+    }
+
+    public void ShowGeofence(){
+        Double[] geofence = new Double[16];
+        Double[] coordinates = new Double[2];
+
+        geofence[0] = -12.119762;
+        geofence[1] = -77.036591;
+        geofence[2] = -12.119410;
+        geofence[3] = -77.036209;
+        geofence[4] = -12.118487;
+        geofence[5] = -77.035980;
+        geofence[6] = -12.118101;
+        geofence[7] = -77.036311;
+        geofence[8] = -12.118088;
+        geofence[9] = -77.037217;
+        geofence[10] = -12.118487;
+        geofence[11] = -77.037804;
+        geofence[12] = -12.119311;
+        geofence[13] = -77.037817;
+        geofence[14] = -12.119847;
+        geofence[15] = -77.037511;
+
+        //coordinates[0] = -12.120695;
+        //coordinates[1] = -77.036445;
+        //coordinates[0] = -12.119095;
+        //coordinates[1] = -77.036994;
+
+        coordinates[0] = -12.118165;
+        coordinates[1] = -77.037838;
+
+         insideFence = fence.contains(Helper.toPointArray(geofence), Helper.toPoint(coordinates));
+
+
+        Double[] poly = new Double[10];
+        poly[0] = 9.0;
+        poly[1] = 4.0;
+        poly[2] = 1.0;
+        poly[3] = 2.0;
+        poly[4] = 4.0;
+        poly[5] = 5.0;
+        poly[6] = 2.0;
+        poly[7] = 8.0;
+        poly[8] = 8.0;
+        poly[9] = 9.0;
+
+        Double[] tri = new Double[6];
+        tri[0] = 3.0;
+        tri[1] = 4.0;
+        tri[2] = 7.0;
+        tri[3] = 6.0;
+        tri[4] = 6.0;
+        tri[5] = 1.0;
+
+
+
+        Log.e("AREA", String.valueOf(Helper.AreaPolygon(Helper.toPointArray(tri))));
+        Helper.isInsideGeofence(Helper.toPointArray(geofence), Helper.toPoint(coordinates));
+
+        for(int i = 0; i<geofence.length-1; i+=2){
+            mapFragment.addMarkerWithImageSource(geofence[i], geofence[i+1], R.mipmap.ic_marker_geofence);
+        }
+
+        mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_geoposition);
     }
 
     @Override

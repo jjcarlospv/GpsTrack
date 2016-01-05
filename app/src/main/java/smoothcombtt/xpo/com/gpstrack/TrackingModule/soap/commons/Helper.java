@@ -15,6 +15,8 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Vector;
 
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.Point;
+
 /**
  * @author rodolfo.burlando
  */
@@ -127,7 +129,7 @@ public class Helper
         }
         return ret.toString().trim();
     }
-/*
+
     public static Point toPoint(Double[] coordinates)
     {
         Point ret = new Point();
@@ -147,7 +149,7 @@ public class Helper
         }
         return ret;
     }
-*/
+
     public static void deleteArrayItem(Object[] array, Object item)
     {
         Vector ret = new Vector();
@@ -378,6 +380,60 @@ public class Helper
         }
 
         return tz.toString();
+    }
+
+    public static Double AreaPolygon(Point [] points){
+
+        Double tempD = 0.0;
+        Double tempd = 0.0;
+        Point[] tempPoints = new Point[points.length + 1];
+
+        for(int k = 0; k < points.length;k++){
+            tempPoints[k] = points[k];
+        }
+
+        tempPoints[tempPoints.length - 1] = points[0];
+
+
+        for(int i = 0; i < tempPoints.length-1; i++){
+
+            tempD = tempD + tempPoints[i].latitude * tempPoints[i+1].longitude;
+        }
+
+        for(int j = 0; j < tempPoints.length-1; j++){
+
+            tempd = tempd + tempPoints[j+1].latitude * tempPoints[j].longitude;
+        }
+        return Math.abs(tempD - tempd)*0.5;
+    }
+
+    public static boolean isInsideGeofence(Point [] geofence, Point position){
+
+        Double tempAreaGeo =  AreaPolygon(geofence);
+        Double tempSmallArea = 0.0;
+        Point[] tempPoint = new Point[3];
+
+        for(int k = 0; k < geofence.length; k++){
+
+
+            if(k == geofence.length-1){
+                tempPoint[0] = geofence[k];
+                tempPoint[1] = geofence[0];
+                tempPoint[2] = position;
+            }
+            else{
+                tempPoint[0] = geofence[k];
+                tempPoint[1] = geofence[k+1];
+                tempPoint[2] = position;
+
+            }
+
+            tempSmallArea = tempSmallArea + AreaPolygon(tempPoint);
+        }
+
+        Log.e("AREA POLY",String.valueOf(tempAreaGeo));
+        Log.e("AREA SUM",String.valueOf(tempSmallArea));
+        return true;
     }
 
 }
