@@ -26,4 +26,6 @@ public class GpsConstants {
 
     public static final String GPS_STOPPED = "GpsStopped";
 
+    public static int SWEET_PATH_GROUP = 10;
+
 }

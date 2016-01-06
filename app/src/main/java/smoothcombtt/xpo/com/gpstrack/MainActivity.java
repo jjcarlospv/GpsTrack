@@ -345,17 +345,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void getPointsList(List<LatLng> latLngs) {
 
-                        for(int j = 0; j<latLngs.size(); j++){
+                        if((latLngs != null)&&(latLngs.size() > 0)){
 
-                            mapFragment.googleMap.addMarker(new MarkerOptions()
-                                    .position(latLngs.get(j))
-                                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_sweet_marker)));
+                            for(int j = 0; j<latLngs.size(); j++){
+
+                                mapFragment.googleMap.addMarker(new MarkerOptions()
+                                        .position(latLngs.get(j))
+                                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_sweet_marker)));
+                            }
                         }
                     }
                 });
             }
 
         }
+
+        cursor.close();
     }
 
     /**
@@ -428,6 +433,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Marker tempOrigin;
     private Marker tempDestino;
     List<LatLng> tempPoints;
+    private ArrayList<LatLng> tempLatLngList;
+
+    private static int rest = 0;
+    private static int groups = 0;
+    private Routing routing;
+    private ProgressDialog dialog;
 
     public void DrawRouteWithList(final ArrayList<LatLng> latLngs ) {
 
@@ -442,81 +453,134 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         latLngs.add(new LatLng(-12.112677, -77.029885));
 */
 
-        final ProgressDialog dialog;
+        final int groupEl = GpsConstants.SWEET_PATH_GROUP;
+        final Double elements = Double.valueOf(groupEl);
+
+        rest = (latLngs.size())% groupEl;
+        groups = (latLngs.size()- rest)/groupEl;
+
+
+
         dialog = new ProgressDialog(MainActivity.this);
         dialog.setTitle("Por favor espere ...");
+        dialog.setCancelable(false);
         dialog.show();
 
-        Routing routing = new Routing.Builder()
-                .travelMode(AbstractRouting.TravelMode.DRIVING)
-                .withListener(new RoutingListener() {
-                    @Override
-                    public void onRoutingFailure() {
-                    }
+        tempPoints = new ArrayList<LatLng>();
 
-                    @Override
-                    public void onRoutingStart() {
-                    }
+        for(int g = 0; g < groups; g++){
 
-                    @Override
-                    public void onRoutingSuccess(ArrayList<Route> arrayList, int i) {
+            tempLatLngList = new ArrayList<LatLng>();
 
-                        mapFragment.googleMap.clear();
-                        newPolylines = new ArrayList<Polyline>();
+            for(int item = groupEl*g; item < groupEl* (g +1); item ++){
+                tempLatLngList.add(latLngs.get(item));
+            }
 
-                        LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
-                        boundsBuilder.include(latLngs.get(0));
-                        boundsBuilder.include(latLngs.get(latLngs.size()-1));
+            if((tempLatLngList != null) && (tempLatLngList.size() > 1)){
+                routing = new Routing.Builder()
+                        .travelMode(AbstractRouting.TravelMode.DRIVING)
+                        .optimize(true)
+                        .withListener(routingListener)
+                        .waypoints(tempLatLngList)
+                        .build();
 
-                        LatLngBounds bounds = boundsBuilder.build();
-                        mapFragment.googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0));
+                routing.execute();
+            }
+        }
 
-                        MarkerOptions options = new MarkerOptions();
-                        options.position(latLngs.get(0));
-                        options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_marker));
-                        tempOrigin = mapFragment.googleMap.addMarker(options);
+        tempLatLngList = new ArrayList<LatLng>();
 
-                        // End marker
-                        options = new MarkerOptions();
-                        options.position(latLngs.get(latLngs.size()-1));
-                        options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher));
-                        tempDestino = mapFragment.googleMap.addMarker(options);
+        for(int g = groupEl*groups; g < groupEl*groups + rest; g++){
+            tempLatLngList.add(latLngs.get(g));
+        }
 
-                        if (newPolylines.size() > 0) {
-                            for (Polyline poly : polylines) {
-                                poly.remove();
-                            }
-                        }
+        if((tempLatLngList != null) && (tempLatLngList.size() > 1)){
+            routing = new Routing.Builder()
+                    .travelMode(AbstractRouting.TravelMode.DRIVING)
+                    .withListener(routingListener)
+                    .waypoints(tempLatLngList)
+                    .build();
 
-                        newPolylines = new ArrayList<>();
-                        //add route(s) to the map.
-                        for (int ii = 0; ii < arrayList.size(); ii++) {
-
-                            PolylineOptions polyOptions = new PolylineOptions();
-                            polyOptions.color(Color.rgb(150, 40, 27));
-                            polyOptions.width(9);
-                            polyOptions.addAll(arrayList.get(ii).getPoints());
-
-                            tempPoints = new ArrayList<LatLng>();
-                            tempPoints = arrayList.get(ii).getPoints();
-
-                            Polyline polyline = mapFragment.googleMap.addPolyline(polyOptions);
-                            newPolylines.add(polyline);
-                        }
-                        interfacePointsList.getPointsList(tempPoints);
-                        dialog.dismiss();
-                    }
-
-                    @Override
-                    public void onRoutingCancelled() {
-                        dialog.dismiss();
-                    }
-                })
-                .waypoints(latLngs)
-                .build();
-        routing.execute();
-
+            routing.execute();
+        }
     }
+
+    private RoutingListener routingListener = new RoutingListener() {
+        @Override
+        public void onRoutingFailure() {
+
+        }
+
+        @Override
+        public void onRoutingStart() {
+
+        }
+
+        @Override
+        public void onRoutingSuccess(ArrayList<Route> arrayList, int i) {
+
+/*
+                            newPolylines = new ArrayList<Polyline>();
+                          mapFragment.googleMap.clear();
+                            LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+                            boundsBuilder.include(tempLatLngList.get(0));
+                            boundsBuilder.include(tempLatLngList.get(tempLatLngList.size()-1));
+
+                            LatLngBounds bounds = boundsBuilder.build();
+                            //mapFragment.googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0));
+
+                            MarkerOptions options = new MarkerOptions();
+                            options.position(latLngs.get(0));
+                            options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_marker));
+                            tempOrigin = mapFragment.googleMap.addMarker(options);
+
+                            // End marker
+                            options = new MarkerOptions();
+                            options.position(tempLatLngList.get(latLngs.size()-1));
+                            options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher));
+                            tempDestino = mapFragment.googleMap.addMarker(options);
+
+                            if (newPolylines.size() > 0) {
+                                for (Polyline poly : polylines) {
+                                    poly.remove();
+                                }
+                            }
+
+                            newPolylines = new ArrayList<>();
+                            //add route(s) to the map.
+                            for (int ii = 0; ii < arrayList.size(); ii++) {
+
+                                PolylineOptions polyOptions = new PolylineOptions();
+                                polyOptions.color(Color.rgb(150, 40, 27));
+                                polyOptions.width(9);
+                                polyOptions.addAll(arrayList.get(ii).getPoints());
+
+
+                                tempPoints = arrayList.get(ii).getPoints();
+
+                                Polyline polyline = mapFragment.googleMap.addPolyline(polyOptions);
+                                newPolylines.add(polyline);
+                            }
+                            finishGroup = true;
+*/
+
+            for (int ii = 0; ii < arrayList.size(); ii++) {
+
+                tempPoints = arrayList.get(ii).getPoints();
+            }
+
+            interfacePointsList.getPointsList(tempPoints);
+            if(dialog != null){
+                dialog.dismiss();
+            }
+
+        }
+
+        @Override
+        public void onRoutingCancelled() {
+
+        }
+    };
 
 
     /**

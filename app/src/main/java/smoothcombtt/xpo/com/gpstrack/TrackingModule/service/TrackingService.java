@@ -33,7 +33,7 @@ public class TrackingService extends Service {
 
     private static final int ONE_MINUTES = 1000 * 60 * 1;
     private static final int INIT_TIME = 5000;
-    private static final int SAMPLE_TIME = 1000 * 4;
+    private static final int SAMPLE_TIME = 1000 * 10;
     private static final int GET_INFO_TIME = 1000 * 4;
 
     private static final int MULTIPLICATOR = 100000000;
@@ -356,7 +356,7 @@ public class TrackingService extends Service {
 
                         destinationlocation = location;
 
-                        if ((deltaLat > 0.0004) || (deltaLng > 0.0004) || (tempDistance > 60)) {
+                        if ((deltaLat > 0.00045) || (deltaLng > 0.00045)) {
 
                             if (isMoving) {
                                 Log.e("isMoving", "TRUE");
@@ -368,8 +368,9 @@ public class TrackingService extends Service {
                             }
                         }
 
-
                     } else {
+
+                        destinationlocation = currentLocation;
                         Log.e("Distance", "GPS" + "/" + "FAR:" + String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
                     }
 
@@ -404,8 +405,6 @@ public class TrackingService extends Service {
             else{
 
             }
-
-
         }
     };
 
@@ -543,8 +542,8 @@ public class TrackingService extends Service {
 
         // Check whether the new location fix is more or less accurate
         int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
-        boolean isLessAccurate = (50 < accuracyDelta) && (accuracyDelta < 100);
-        boolean isMoreAccurate = (-45 < accuracyDelta) && (accuracyDelta <= 50);
+        boolean isLessAccurate = (40 < accuracyDelta) && (accuracyDelta < 100);
+        boolean isMoreAccurate = (-45 < accuracyDelta) && (accuracyDelta <= 40);
         boolean isSignificantlyLessAccurate = accuracyDelta > 100;
 
         if(prov.equals(LocationManager.GPS_PROVIDER)){
@@ -623,7 +622,7 @@ public class TrackingService extends Service {
         deltaLat = Math.abs(tempOriginLat - tempDestinoLat);
         deltaLng = Math.abs(tempOriginLng - tempDestinoLng);
 
-        if (((0.1 > deltaLat) && (deltaLat > 0.00002)) || ((0.1 > deltaLng) && (deltaLng > 0.00002))) {
+        if (((1 > deltaLat) && (deltaLat > 0.00001)) || ((1 > deltaLng) && (deltaLng > 0.00001))) {
             return true;
         }
 
