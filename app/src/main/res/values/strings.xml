@@ -19,6 +19,7 @@
 
     <string name="default_upload_website">https://www.websmithing.com/gpstracker/displaymap.php</string>
     <string name="maps_api_key">AIzaSyCAfv22U58BL9Vxjbz_VWzkMpfAe-ngTpk</string>
+    <string name="google_maps_web_services_key" templateMergeStrategy="preserve">AIzaSyAcXgGZ0d9ujapO3SMXvq5EeVG1Utb4wVI</string>
 
     <string name="GPS_error_title">Authorization error</string>
     <string name="GPS_error">Please activate the GPS. You won\'t be able to use Tracking</string>
@@ -28,5 +29,9 @@
     <string name="backpressed_message">¿Deseas salir de la aplicación?</string>
     <string name="btn_acept">Aceptar</string>
     <string name="btn_cancel">Cancelar</string>
+
+    <string name="load_gpx_data_button_label">Load GPX mock data</string>
+    <string name="snap_to_roads_button_label">Send snap to roads request</string>
+    <string name="request_speeds_button_label">Request speed limits</string>
 
 </resources>

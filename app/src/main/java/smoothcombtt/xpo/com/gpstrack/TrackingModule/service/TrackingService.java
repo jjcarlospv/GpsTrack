@@ -215,6 +215,17 @@ public class TrackingService extends Service {
     }
 
     private LocationListener locationListenerNetwork = new LocationListener() {
+
+        Double tempSaveLastLat = 0.0;
+        Double tempSaveLastLng = 0.0;
+        Double tempSaveLastProv = 0.0;
+
+        String tempStringLat = "";
+        String tempStringLng = "";
+        String tempStringProv = "";
+
+        Double tempDistance = 0.0;
+
         @Override
         public void onLocationChanged(Location location) {
 
@@ -227,37 +238,58 @@ public class TrackingService extends Service {
             location2.setLongitude(-77.036816);
             Log.e("Distance", String.valueOf(TrackingService.distance(location1, location2)));
 
-            if (firstTimeNetwork) {
-                currentNETLocation = location;
-                SaveLocation(location);
-                firstTimeNetwork = false;
-            }
 
-            if(isGoodGps){
+            tempStringLat = getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
+                    .getString(GpsConstants.SHARE_POSITION_TRACK_LAT, "0.0");
+
+            tempStringLng = getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
+                    .getString(GpsConstants.SHARE_POSITION_TRACK_LNG, "0.0");
+
+            tempStringProv = getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
+                    .getString(GpsConstants.SHARE_POSITION_TRACK_PROV, "");
+
+            tempSaveLastLat = Double.valueOf(tempStringLat);
+            tempSaveLastLng = Double.valueOf(tempStringLng);
+
+
+            if ((tempStringLat.equals("0.0")) && (tempStringLng.equals("0.0"))) {
+                currentNETLocation = location;
+                //originLocation = location;
+                SaveLocation(location);
+            } else {
+
+
+            if (isGoodGps) {
+
+                currentNETLocation.setLatitude(tempSaveLastLat);
+                currentNETLocation.setLongitude(tempSaveLastLng);
+                currentNETLocation.setProvider(tempStringProv);
+
                 if (isBetterLocation(location, currentNETLocation, LocationManager.NETWORK_PROVIDER)) {
 
                     if (isNearToNextPosition(currentNETLocation, location)) {
 
-                        Double tempSaveLastLat = 0.0;
-                        Double tempSaveLastLng = 0.0;
                         Double deltaLat = 0.0;
                         Double deltaLng = 0.0;
 
-                        tempSaveLastLat = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
-                                .getString(GpsConstants.SHARE_POSITION_TRACK_LAT, "0.0"));
+                        deltaLat = Math.abs(location.getLatitude() - currentNETLocation.getLatitude());
+                        deltaLng = Math.abs(location.getLongitude() - currentNETLocation.getLongitude());
 
-                        tempSaveLastLng = Double.valueOf(getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
-                                .getString(GpsConstants.SHARE_POSITION_TRACK_LNG, "0.0"));
+                        tempDistance = TrackingService.distance(currentNETLocation, location);
 
-                        deltaLat = Math.abs(location.getLatitude() - tempSaveLastLat);
-                        deltaLng = Math.abs(location.getLongitude() - tempSaveLastLng);
+                        Intent intentTestService = new Intent(GpsConstants.DISTANCE_ACTION);
+                        intentTestService.putExtra(GpsConstants.PROGRESS_DISTANCE, String.valueOf(tempDistance));
+                        intentTestService.addFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
+                        sendBroadcast(intentTestService);
 
-                        if ((deltaLat > 0.0004) || (deltaLng > 0.0004)) {
+                        //destinationlocation = location;
+
+                        if ((deltaLat > 0.00045) || (deltaLng > 0.00045)) {
 
                             if (isMoving) {
                                 Log.e("isMoving", "TRUE");
-                                currentNETLocation = location;
                                 SaveLocation(location);
+
                                 Log.e("NETWORK", String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
                             } else {
                                 Log.e("isMoving", "FALSE");
@@ -265,16 +297,17 @@ public class TrackingService extends Service {
                         }
 
                     } else {
+                        //destinationlocation = currentNETLocation;
                         Log.e("Distance", "NETWORK" + "/" + "FAR:" + String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
                     }
 
                 } else {
                     Log.e("DiscardLoc", "NETWORK" + "/" + String.valueOf(location.getLatitude()) + "," + String.valueOf(location.getLongitude()) + "/" + String.valueOf(location.getAccuracy()));
                 }
-            }else{
+            } else {
                 Log.e("GPS:", "BAD SIGNAL");
             }
-
+        }
 
         }
 
@@ -290,7 +323,17 @@ public class TrackingService extends Service {
 
         @Override
         public void onProviderDisabled(String s) {
+            if(s.equals(LocationManager.NETWORK_PROVIDER)){
+                Intent intentGpsDisEnable = new Intent(GpsConstants.GPS_STOPPED);
+                intentGpsDisEnable.addFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
+                sendBroadcast(intentGpsDisEnable);
 
+                stopSelf();
+                Log.e("Network", "UnEnable");
+            }
+            else{
+
+            }
         }
     };
 
@@ -326,12 +369,6 @@ public class TrackingService extends Service {
                 originLocation = location;
                 SaveLocation(location);
             }else{
-
-                            /*if (firstTime) {
-                currentLocation = location;
-                SaveLocation(location);
-                firstTime = false;
-            }*/
 
                 currentLocation.setLatitude(tempSaveLastLat);
                 currentLocation.setLongitude(tempSaveLastLng);
@@ -416,7 +453,7 @@ public class TrackingService extends Service {
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         //locationManager.getProvider(locationManager.getBestProvider(createCoarseCriteria(), true));
 
-        //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerNetwork);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerNetwork);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
         Log.e("LocService", "StartService");
     }
@@ -459,7 +496,7 @@ public class TrackingService extends Service {
      */
     private void StopLocationService() {
         if (locationManager != null) {
-            //locationManager.removeUpdates(locationListenerNetwork);
+            locationManager.removeUpdates(locationListenerNetwork);
             locationManager.removeUpdates(locationListenerGps);
             locationManager = null;
             Log.e("LocService", "StopService");
@@ -547,7 +584,7 @@ public class TrackingService extends Service {
         boolean isSignificantlyLessAccurate = accuracyDelta > 100;
 
         if(prov.equals(LocationManager.GPS_PROVIDER)){
-            if(isMoreAccurate){isGoodGps = true;}
+            if(isLessAccurate){isGoodGps = true;}
             else{isGoodGps = false;}
         }
 

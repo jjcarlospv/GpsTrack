@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -71,16 +72,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // Prueba Geofence
     Polygon fence = new Polygon();
+    Double[] geofence = new Double[16];
+    Double[] coordinates = new Double[2];
+    ArrayList<LatLng> arrayPathLoc = new ArrayList<LatLng>();
 
     boolean insideFence = false;
-
-
-
+    boolean outPath = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        arrayPathLoc.add(new LatLng(-12.120851, -77.037116));
+        arrayPathLoc.add(new LatLng(-12.121208, -77.037122));
+        arrayPathLoc.add(new LatLng(-12.121252, -77.035836));
+        arrayPathLoc.add(new LatLng(-12.121227, -77.035335));
+        arrayPathLoc.add(new LatLng(-12.121208, -77.034806));
+        arrayPathLoc.add(new LatLng(-12.121230, -77.034251));
+        arrayPathLoc.add(new LatLng(-12.121242, -77.033705));
+        arrayPathLoc.add(new LatLng(-12.121609, -77.033270));
+        arrayPathLoc.add(new LatLng(-12.122182, -77.032634));
+        arrayPathLoc.add(new LatLng(-12.122579, -77.032197));
+        arrayPathLoc.add(new LatLng(-12.122937, -77.031813)); // Diagonal con José Galvez
+
+
+
+        geofence[0] = -12.119762;
+        geofence[1] = -77.036591;
+        geofence[2] = -12.119410;
+        geofence[3] = -77.036209;
+        geofence[4] = -12.118487;
+        geofence[5] = -77.035980;
+        geofence[6] = -12.118101;
+        geofence[7] = -77.036311;
+        geofence[8] = -12.118088;
+        geofence[9] = -77.037217;
+        geofence[10] = -12.118487;
+        geofence[11] = -77.037804;
+        geofence[12] = -12.119311;
+        geofence[13] = -77.037817;
+        geofence[14] = -12.119847;
+        geofence[15] = -77.037511;
+
 
         act_main_start  = (Button)findViewById(R.id.act_main_start);
         act_main_stop  = (Button)findViewById(R.id.act_main_stop);
@@ -108,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 switch (i) {
                     case 1:
                         ShowMarkers();
-                        ShowGeofence();
+                        ShowGeofence(geofence);
                         break;
                 }
             }
@@ -136,39 +170,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    public void ShowGeofence(){
-        Double[] geofence = new Double[16];
-        Double[] coordinates = new Double[2];
-
-        geofence[0] = -12.119762;
-        geofence[1] = -77.036591;
-        geofence[2] = -12.119410;
-        geofence[3] = -77.036209;
-        geofence[4] = -12.118487;
-        geofence[5] = -77.035980;
-        geofence[6] = -12.118101;
-        geofence[7] = -77.036311;
-        geofence[8] = -12.118088;
-        geofence[9] = -77.037217;
-        geofence[10] = -12.118487;
-        geofence[11] = -77.037804;
-        geofence[12] = -12.119311;
-        geofence[13] = -77.037817;
-        geofence[14] = -12.119847;
-        geofence[15] = -77.037511;
-
-        //coordinates[0] = -12.120695;
-        //coordinates[1] = -77.036445;
-        //coordinates[0] = -12.119095;
-        //coordinates[1] = -77.036994;
-
-        coordinates[0] = -12.118165;
-        coordinates[1] = -77.037838;
-
-         insideFence = fence.contains(Helper.toPointArray(geofence), Helper.toPoint(coordinates));
 
 
-        Double[] poly = new Double[10];
+
+
+    public void ShowGeofence(Double [] geofence){
+
+        /*Double[] poly = new Double[10];
         poly[0] = 9.0;
         poly[1] = 4.0;
         poly[2] = 1.0;
@@ -186,18 +194,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tri[2] = 7.0;
         tri[3] = 6.0;
         tri[4] = 6.0;
-        tri[5] = 1.0;
-
-
-
-        Log.e("AREA", String.valueOf(Helper.AreaPolygon(Helper.toPointArray(tri))));
-        Helper.isInsideGeofence(Helper.toPointArray(geofence), Helper.toPoint(coordinates));
+        tri[5] = 1.0;*/
 
         for(int i = 0; i<geofence.length-1; i+=2){
             mapFragment.addMarkerWithImageSource(geofence[i], geofence[i+1], R.mipmap.ic_marker_geofence);
         }
-
-        mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_geoposition);
     }
 
     @Override
@@ -223,7 +224,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onBackPressed() {
 
-
         final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
         //builder.setTitle(getResources().getString(R.string.push_title));
@@ -245,7 +245,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
         builder.show();
-
     }
 
     @Override
@@ -375,6 +374,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String braodCDistance;
         int posTime = 0;
 
+        Location location = new Location(LocationManager.GPS_PROVIDER);
+
         @Override
         public void onReceive(Context context, Intent intent) {
 
@@ -385,11 +386,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     broadCLongitude = intent.getStringExtra(GpsConstants.PROGRESS_LONGITUDE);
                     //broadCSpeed = intent.getStringExtra(GpsConstants.PROGRESS_SPEED);
                     //mapFragment.moveTo(Double.valueOf(broadCLatitude), Double.valueOf(broadCLongitude), true);
-                    mapFragment.addMarker(Double.valueOf(broadCLatitude), Double.valueOf(broadCLongitude));
+                    //mapFragment.addMarker(Double.valueOf(broadCLatitude), Double.valueOf(broadCLongitude));
 
                     //if(speedometer != null){
                     //    speedometer.setSpeed(Double.valueOf(broadCSpeed),true);
                     //}
+
+
+                    location.setLatitude(Double.valueOf(broadCLatitude));
+                    location.setLongitude(Double.valueOf(broadCLongitude));
+
+                    coordinates[0] = Double.valueOf(broadCLatitude);
+                    coordinates[1] = Double.valueOf(broadCLongitude);
+
+
+                    // Comprobamos si esta cerca de un punto de la ruta
+                    outPath = Helper.isNearPath(arrayPathLoc, location);
+
+                    if(outPath){
+                        mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker);
+                    }
+                    else{
+                        mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_out_path);
+                    }
+
+
+                    //Comprobamos si estamos dentro de un Geofence
+                    insideFence =  Helper.isInsideGeofence(Helper.toPointArray(geofence), Helper.toPoint(coordinates));
+
+                    if(insideFence){
+                        mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_geoposition);
+                    }
+                    else{
+                        mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker);
+                    }
 
                     break;
 

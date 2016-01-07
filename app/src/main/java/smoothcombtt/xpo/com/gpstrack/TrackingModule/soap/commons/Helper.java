@@ -5,9 +5,13 @@
 
 package smoothcombtt.xpo.com.gpstrack.TrackingModule.soap.commons;
 
+import android.location.Location;
 import android.util.Log;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Hashtable;
@@ -382,6 +386,13 @@ public class Helper
         return tz.toString();
     }
 
+    // Nuevos metodos para el geofence
+
+    /**
+     * Metodo para calcular el area de una region mediante coordenadas
+     * @param points
+     * @return
+     */
     public static Double AreaPolygon(Point [] points){
 
         Double tempD = 0.0;
@@ -407,10 +418,16 @@ public class Helper
         return Math.abs(tempD - tempd)*0.5;
     }
 
+    /**
+     * Metodo para verificar el ingreso de un punto al interior de un geofence
+     * @param geofence
+     * @param position
+     * @return
+     */
     public static boolean isInsideGeofence(Point [] geofence, Point position){
 
         Double tempAreaGeo =  AreaPolygon(geofence);
-        Double tempSmallArea = 0.0;
+        Double tempSumSmallArea = 0.0;
         Point[] tempPoint = new Point[3];
 
         for(int k = 0; k < geofence.length; k++){
@@ -428,12 +445,61 @@ public class Helper
 
             }
 
-            tempSmallArea = tempSmallArea + AreaPolygon(tempPoint);
+            tempSumSmallArea = tempSumSmallArea + AreaPolygon(tempPoint);
         }
 
         Log.e("AREA POLY",String.valueOf(tempAreaGeo));
-        Log.e("AREA SUM",String.valueOf(tempSmallArea));
-        return true;
+        Log.e("AREA SUM",String.valueOf(tempSumSmallArea));
+
+        if(tempSumSmallArea > tempAreaGeo){
+            return false;
+        }
+        else{
+            return true;
+        }
+
+    }
+
+    public static boolean isNearPath(ArrayList<LatLng> arrayPathLoc, Location currentLoc){
+
+        boolean isInsideLat = false;
+        boolean isInsideLng = false;
+
+        Double [] latPoly = new Double[4];
+        Double [] lngPoly = new Double[4];
+        Double widthPoly = 0.0004;
+        Double heightPoly = 0.0004;
+
+        latPoly[0] = currentLoc.getLatitude() - (heightPoly/2.0);
+        latPoly[1] = currentLoc.getLatitude() + (heightPoly/2.0);
+        latPoly[2] = currentLoc.getLatitude() + (heightPoly/2.0);
+        latPoly[3] = currentLoc.getLatitude() - (heightPoly/2.0);
+
+        lngPoly[0] = currentLoc.getLongitude() + (widthPoly/2.0);
+        lngPoly[1] = currentLoc.getLongitude() + (widthPoly/2.0);
+        lngPoly[2] = currentLoc.getLongitude() - (widthPoly/2.0);
+        lngPoly[3] = currentLoc.getLongitude() - (widthPoly/2.0);
+
+        for(int i = 0; i < arrayPathLoc.size(); i++){
+
+            if((latPoly[0] < arrayPathLoc.get(i).latitude)&&(arrayPathLoc.get(i).latitude < latPoly[1])){
+                isInsideLat = true;
+
+                if((lngPoly[2] < arrayPathLoc.get(i).longitude)&&(arrayPathLoc.get(i).longitude < lngPoly[1])){
+                    isInsideLng = true;
+                    break;
+                }
+                else{
+                    isInsideLng = false;
+                }
+            }else{
+                isInsideLat = false;
+            }
+
+        }
+
+
+        return isInsideLat && isInsideLng;
     }
 
 }
