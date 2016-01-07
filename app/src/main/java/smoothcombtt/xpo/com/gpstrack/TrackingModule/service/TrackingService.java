@@ -33,7 +33,7 @@ public class TrackingService extends Service {
 
     private static final int ONE_MINUTES = 1000 * 60 * 1;
     private static final int INIT_TIME = 5000;
-    private static final int SAMPLE_TIME = 1000 * 10;
+    private static final int SAMPLE_TIME = 1000 * 4;
     private static final int GET_INFO_TIME = 1000 * 4;
 
     private static final int MULTIPLICATOR = 100000000;
@@ -252,7 +252,7 @@ public class TrackingService extends Service {
                         deltaLat = Math.abs(location.getLatitude() - tempSaveLastLat);
                         deltaLng = Math.abs(location.getLongitude() - tempSaveLastLng);
 
-                        if ((deltaLat > 0.0005) || (deltaLng > 0.0005)) {
+                        if ((deltaLat > 0.0004) || (deltaLng > 0.0004)) {
 
                             if (isMoving) {
                                 Log.e("isMoving", "TRUE");
@@ -542,8 +542,8 @@ public class TrackingService extends Service {
 
         // Check whether the new location fix is more or less accurate
         int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
-        boolean isLessAccurate = (40 < accuracyDelta) && (accuracyDelta < 100);
-        boolean isMoreAccurate = (-45 < accuracyDelta) && (accuracyDelta <= 40);
+        boolean isLessAccurate = (45 < accuracyDelta) && (accuracyDelta < 100);
+        boolean isMoreAccurate = (-45 < accuracyDelta) && (accuracyDelta <= 45);
         boolean isSignificantlyLessAccurate = accuracyDelta > 100;
 
         if(prov.equals(LocationManager.GPS_PROVIDER)){
