@@ -7,12 +7,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 
 import android.support.v7.app.AppCompatActivity;
@@ -30,14 +28,11 @@ import com.directions.route.AbstractRouting;
 import com.directions.route.Route;
 import com.directions.route.Routing;
 import com.directions.route.RoutingListener;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,10 +42,7 @@ import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.Polygon;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.provider.TrackingProvider;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.service.TrackingService;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.fragment.MapFragment;
-import smoothcombtt.xpo.com.gpstrack.TrackingModule.soap.ProxyImpl;
-import smoothcombtt.xpo.com.gpstrack.TrackingModule.soap.WebServiceFactory;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.soap.commons.Helper;
-import smoothcombtt.xpo.com.gpstrack.TrackingModule.soap.tos.ResultTO;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -61,7 +53,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button act_main_new_ruta;
     private Button act_main_clean_data;
     private TextView act_main_speed;
-    private TextView act_main_distance;
+    private TextView act_main_distance_1;
+    private TextView act_main_distance_2;
 
     private FrameLayout container;
     private MapFragment mapFragment;
@@ -72,7 +65,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // Prueba Geofence
     Polygon fence = new Polygon();
-    Double[] geofence = new Double[16];
+    Double[] geofence1 = new Double[8];
+    Double[] geofence2 = new Double[16];
     Double[] coordinates = new Double[2];
     ArrayList<LatLng> arrayPathLoc = new ArrayList<LatLng>();
 
@@ -86,35 +80,60 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         arrayPathLoc.add(new LatLng(-12.120851, -77.037116));
         arrayPathLoc.add(new LatLng(-12.121208, -77.037122));
+        arrayPathLoc.add(new LatLng(-12.121204, -77.036546));
+        arrayPathLoc.add(new LatLng(-12.121230, -77.036187));
         arrayPathLoc.add(new LatLng(-12.121252, -77.035836));
         arrayPathLoc.add(new LatLng(-12.121227, -77.035335));
         arrayPathLoc.add(new LatLng(-12.121208, -77.034806));
         arrayPathLoc.add(new LatLng(-12.121230, -77.034251));
         arrayPathLoc.add(new LatLng(-12.121242, -77.033705));
         arrayPathLoc.add(new LatLng(-12.121609, -77.033270));
+        arrayPathLoc.add(new LatLng(-12.121808, -77.033028));
         arrayPathLoc.add(new LatLng(-12.122182, -77.032634));
         arrayPathLoc.add(new LatLng(-12.122579, -77.032197));
         arrayPathLoc.add(new LatLng(-12.122937, -77.031813)); // Diagonal con José Galvez
+        arrayPathLoc.add(new LatLng(-12.123128, -77.031920));
+        arrayPathLoc.add(new LatLng(-12.123440, -77.032200));
+        arrayPathLoc.add(new LatLng(-12.123970, -77.032513));
+        arrayPathLoc.add(new LatLng(-12.124450, -77.032749));
+        arrayPathLoc.add(new LatLng(-12.124756, -77.032526));
+        arrayPathLoc.add(new LatLng(-12.124849, -77.032239));
+        arrayPathLoc.add(new LatLng(-12.124993, -77.031862));
+        arrayPathLoc.add(new LatLng(-12.125180, -77.031416));
+        arrayPathLoc.add(new LatLng(-12.125392, -77.031524));
+        arrayPathLoc.add(new LatLng(-12.125710, -77.031658));
+        arrayPathLoc.add(new LatLng(-12.125953, -77.031754));
+        arrayPathLoc.add(new LatLng(-12.126059, -77.031499));
+        arrayPathLoc.add(new LatLng(-12.126228, -77.031135));
+        arrayPathLoc.add(new LatLng(-12.126377, -77.030797));
+        arrayPathLoc.add(new LatLng(-12.126490, -77.030535));
 
 
+        geofence2[0] = -12.119762;
+        geofence2[1] = -77.036591;
+        geofence2[2] = -12.119410;
+        geofence2[3] = -77.036209;
+        geofence2[4] = -12.118487;
+        geofence2[5] = -77.035980;
+        geofence2[6] = -12.118101;
+        geofence2[7] = -77.036311;
+        geofence2[8] = -12.118088;
+        geofence2[9] = -77.037217;
+        geofence2[10] = -12.118487;
+        geofence2[11] = -77.037804;
+        geofence2[12] = -12.119311;
+        geofence2[13] = -77.037817;
+        geofence2[14] = -12.119847;
+        geofence2[15] = -77.037511;
 
-        geofence[0] = -12.119762;
-        geofence[1] = -77.036591;
-        geofence[2] = -12.119410;
-        geofence[3] = -77.036209;
-        geofence[4] = -12.118487;
-        geofence[5] = -77.035980;
-        geofence[6] = -12.118101;
-        geofence[7] = -77.036311;
-        geofence[8] = -12.118088;
-        geofence[9] = -77.037217;
-        geofence[10] = -12.118487;
-        geofence[11] = -77.037804;
-        geofence[12] = -12.119311;
-        geofence[13] = -77.037817;
-        geofence[14] = -12.119847;
-        geofence[15] = -77.037511;
-
+        geofence1[0] = -12.176186;
+        geofence1[1] = -77.003746;
+        geofence1[2] = -12.175568;
+        geofence1[3] = -77.003615;
+        geofence1[4] = -12.175273;
+        geofence1[5] = -77.004152;
+        geofence1[6] = -12.175577;
+        geofence1[7] = -77.004567;
 
         act_main_start  = (Button)findViewById(R.id.act_main_start);
         act_main_stop  = (Button)findViewById(R.id.act_main_stop);
@@ -122,14 +141,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         act_main_new_ruta  = (Button)findViewById(R.id.act_main_new_ruta);
         act_main_clean_data = (Button)findViewById(R.id.act_main_clean_data);
         act_main_speed = (TextView)findViewById(R.id.act_main_speed);
-        act_main_distance = (TextView)findViewById(R.id.act_main_distance);
+        act_main_distance_1 = (TextView)findViewById(R.id.act_main_distance_1);
+        act_main_distance_2 = (TextView)findViewById(R.id.act_main_distance_2);
 
         act_main_start.setOnClickListener(this);
         act_main_stop.setOnClickListener(this);
         act_main_show_markers.setOnClickListener(this);
         act_main_new_ruta.setOnClickListener(this);
         act_main_clean_data.setOnClickListener(this);
-
 
         container = (FrameLayout)findViewById(R.id.container);
         mapFragment = new MapFragment();
@@ -142,7 +161,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 switch (i) {
                     case 1:
                         ShowMarkers();
-                        ShowGeofence(geofence);
+                        ShowGeofence(geofence1, geofence2);
+                        ShowPath(arrayPathLoc);
                         break;
                 }
             }
@@ -174,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-    public void ShowGeofence(Double [] geofence){
+    public void ShowGeofence(Double [] geofenceOrigin, Double [] geofenceDestination){
 
         /*Double[] poly = new Double[10];
         poly[0] = 9.0;
@@ -196,10 +216,72 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tri[4] = 6.0;
         tri[5] = 1.0;*/
 
-        for(int i = 0; i<geofence.length-1; i+=2){
-            mapFragment.addMarkerWithImageSource(geofence[i], geofence[i+1], R.mipmap.ic_marker_geofence);
+        for(int i = 0; i<geofenceOrigin.length-1; i+=2){
+            mapFragment.addMarkerWithImageSource(geofenceOrigin[i], geofenceOrigin[i+1], R.mipmap.ic_marker_geofence);
         }
+
+        for(int i = 0; i<geofenceDestination.length-1; i+=2){
+            mapFragment.addMarkerWithImageSource(geofenceDestination[i], geofenceDestination[i+1], R.mipmap.ic_marker_geofence);
+        }
+
+
+        coordinates[0] = -12.119826;
+        coordinates[1] = -77.037017;// 1.394 m
+
+        coordinates[0] = -12.119957;
+        coordinates[1] = -77.037004;// 8.874 m
+
+        coordinates[0] = -12.120662;
+        coordinates[1] = -77.036966;//48.96 m
+
+        coordinates[0] = -12.119140;
+        coordinates[1] = -77.036105;//48.96 m //
+
+
+        coordinates[0] = -12.121241;
+        coordinates[1] = -77.035840;//48.96 m //
+
+        //Data Ok de prueba
+        /*Double tempDistanceGeo = Helper.distanceToGeofence(Helper.toPointArray(geofenceOrigin), Helper.toPoint(coordinates));
+        act_main_distance_1.setText(String.valueOf(tempDistanceGeo));
+        mapFragment.addMarker(coordinates[0], coordinates[1]);
+
+        tempDistanceGeo = Helper.distanceToGeofence(Helper.toPointArray(geofenceDestination), Helper.toPoint(coordinates));
+        act_main_distance_2.setText(String.valueOf(tempDistanceGeo));*/
     }
+
+    public void ShowPath(ArrayList<LatLng> arrayList){
+
+        for(int i = 0; i < arrayList.size(); i++){
+            mapFragment.addMarkerWithImageSource(arrayList.get(i).latitude, arrayList.get(i).longitude, R.mipmap.ic_marker_path);
+        }
+
+        /*coordinates[0] = -12.121241;
+        coordinates[1] = -77.035840; // near
+
+        coordinates[0] = -12.120845;
+        coordinates[1] = -77.035824; // out
+
+        coordinates[0] = -12.121094;
+        coordinates[1] = -77.035854; // ok
+
+        coordinates[0] = -12.121242;
+        coordinates[1] = -77.035593;
+
+        Location tempLoc = new Location(LocationManager.GPS_PROVIDER);
+        tempLoc.setLatitude(coordinates[0]);
+        tempLoc.setLongitude(coordinates[1]);
+
+        outPath = Helper.isNearPath(arrayList, tempLoc);
+
+        if(outPath){
+            mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker);
+        }
+        else{
+            mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_out_path);
+        }*/
+    }
+
 
     @Override
     protected void onResume() {
@@ -286,6 +368,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.act_main_show_markers:
                 ShowMarkers();
+                ShowGeofence(geofence1, geofence2);
+                ShowPath(arrayPathLoc);
                 break;
 
             case R.id.act_main_new_ruta:
@@ -412,7 +496,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
                     //Comprobamos si estamos dentro de un Geofence
-                    insideFence =  Helper.isInsideGeofence(Helper.toPointArray(geofence), Helper.toPoint(coordinates));
+                    insideFence =  Helper.isInsideGeofence(Helper.toPointArray(geofence1), Helper.toPoint(coordinates));
 
                     if(insideFence){
                         mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_geoposition);
@@ -420,6 +504,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     else{
                         mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker);
                     }
+
+                    Double tempDistanceGeo = Helper.distanceToGeofence(Helper.toPointArray(geofence1), Helper.toPoint(coordinates));
+                    act_main_distance_1.setText(String.valueOf(tempDistanceGeo));
+
+                    tempDistanceGeo = Helper.distanceToGeofence(Helper.toPointArray(geofence2), Helper.toPoint(coordinates));
+                    act_main_distance_2.setText(String.valueOf(tempDistanceGeo));
 
                     break;
 
@@ -447,7 +537,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 case GpsConstants.DISTANCE_ACTION:
                     braodCDistance = intent.getStringExtra(GpsConstants.PROGRESS_DISTANCE);
-                    act_main_distance.setText(braodCDistance);
+                    //act_main_distance.setText(braodCDistance);
                     break;
             }
 

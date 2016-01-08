@@ -114,6 +114,12 @@
             android:gravity="center">
 
             <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="D. Velocidad"
+                android:textStyle="bold"/>
+
+            <TextView
                 android:id="@+id/act_main_speed"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -123,7 +129,8 @@
         <com.cardiomood.android.controls.gauge.SpeedometerGauge
             android:id="@+id/speedometer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
         <LinearLayout
             android:layout_width="0dp"
             android:layout_weight="1.5"
@@ -132,7 +139,23 @@
             android:gravity="center">
 
             <TextView
-                android:id="@+id/act_main_distance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="D. Origin"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/act_main_distance_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="D. Destino"
+                android:textStyle="bold"/>
+            <TextView
+                android:id="@+id/act_main_distance_2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 

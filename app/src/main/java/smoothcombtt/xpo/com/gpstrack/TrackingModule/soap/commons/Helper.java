@@ -6,6 +6,7 @@
 package smoothcombtt.xpo.com.gpstrack.TrackingModule.soap.commons;
 
 import android.location.Location;
+import android.location.LocationManager;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -388,6 +389,53 @@ public class Helper
 
     // Nuevos metodos para el geofence
 
+
+    /**
+     * Metodo para calcular distancia entre dos puntos. Requiere 2 Locations
+     *
+     * @param one
+     * @param two
+     * @return
+     */
+    private static Double distance(Location one, Location two) {
+        int R = 6371000;
+        Double dLat = toRad(two.getLatitude() - one.getLatitude());
+        Double dLon = toRad(two.getLongitude() - one.getLongitude());
+        Double lat1 = toRad(one.getLatitude());
+        Double lat2 = toRad(two.getLatitude());
+        Double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+        Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        Double d = R * c;
+
+        // Redondear a 3 decimales
+        int dec = 3;
+        d = Math.round(d*Math.pow(10,3))/ Math.pow(10, 3);
+        return d;
+    }
+
+    private static Double ConvCoordToMetros(Double latLng) {
+        int R = 6371000;
+        Double dLat = toRad(latLng);
+        Double dLon = toRad(0.0);
+        Double lat1 = toRad(0.0);
+        Double lat2 = toRad(latLng);
+        Double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+        Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        Double d = R * c;
+
+        // Redondear a 3 decimales
+        int dec = 3;
+        d = Math.round(d*Math.pow(10,3))/ Math.pow(10, 3);
+        return d;
+    }
+
+    private static double toRad(Double d) {
+        return d * Math.PI / 180;
+    }
+
+
     /**
      * Metodo para calcular el area de una region mediante coordenadas
      * @param points
@@ -460,6 +508,12 @@ public class Helper
 
     }
 
+    /**
+     * Metodo para identificar si un punto se desvía del camino asignado
+     * @param arrayPathLoc
+     * @param currentLoc
+     * @return
+     */
     public static boolean isNearPath(ArrayList<LatLng> arrayPathLoc, Location currentLoc){
 
         boolean isInsideLat = false;
@@ -467,8 +521,8 @@ public class Helper
 
         Double [] latPoly = new Double[4];
         Double [] lngPoly = new Double[4];
-        Double widthPoly = 0.0004;
-        Double heightPoly = 0.0004;
+        Double widthPoly = 0.0005;
+        Double heightPoly = 0.0005;
 
         latPoly[0] = currentLoc.getLatitude() - (heightPoly/2.0);
         latPoly[1] = currentLoc.getLatitude() + (heightPoly/2.0);
@@ -500,6 +554,91 @@ public class Helper
 
 
         return isInsideLat && isInsideLng;
+    }
+
+    /**
+     * Metodo para calcular la distancia hacia un Geofence
+     * @param tempGeofence
+     * @param position
+     * @return
+     */
+    public static Double distanceToGeofence(Point[] tempGeofence, Point position){
+
+        Double[] tempDistance = new Double[tempGeofence.length];
+        int[] tempPositionDistance = new int[tempGeofence.length];
+        Location tempLoc1 = new Location(LocationManager.GPS_PROVIDER);
+        Location tempLoc2 = new Location(LocationManager.GPS_PROVIDER);
+        int tempIndex = 0;
+        Point[] tempPointTriangule = new Point[3];
+
+        Double tempDistanceToGeofence = 0.0;
+
+        if((tempGeofence == null)&&(position == null)){
+
+            Log.e("distanceToGeofence", "0.0");
+            return 0.0;
+        }
+
+        //Calculamos las distancias hacia cada punto del geofence
+        for(int i = 0; i < tempGeofence.length; i++){
+
+            tempLoc1.setLatitude(tempGeofence[i].latitude);
+            tempLoc1.setLongitude(tempGeofence[i].longitude);
+
+            tempLoc2.setLatitude(position.latitude);
+            tempLoc2.setLongitude(position.longitude);
+
+            tempDistance[i] = distance(tempLoc1, tempLoc2); // Distancia en Metros
+            tempPositionDistance[i] = i;
+        }
+
+        int tempChange = 0;
+        Double tempChangeDistance = 0.0;
+
+        // Realizamos el ordenamineto de las distancias
+        for(int i = 0; i < tempDistance.length - 1; i++){
+            for(int j = i +1; j < tempDistance.length; j++){
+                if(tempDistance[i] > tempDistance[j]){
+
+                    tempChangeDistance = tempDistance[i];
+                    tempDistance[i] = tempDistance[j];
+                    tempDistance[j] = tempChangeDistance;
+
+                    tempChange = tempPositionDistance[i];
+                    tempPositionDistance[i] = tempPositionDistance[j];
+                    tempPositionDistance[j] = tempChange;
+                }
+            }
+        }
+
+        // Tomamos las medidas mas pequeñas para generar un triangulo que nos ayudara
+        // con el cálculo de distancia
+
+
+        tempLoc1.setLatitude(tempGeofence[tempPositionDistance[0]].latitude);
+        tempLoc1.setLongitude(tempGeofence[tempPositionDistance[0]].longitude);
+
+        tempLoc2.setLatitude(tempGeofence[tempPositionDistance[1]].latitude);
+        tempLoc2.setLongitude(tempGeofence[tempPositionDistance[1]].longitude);
+
+        Double tempBaseLength = distance(tempLoc1, tempLoc2); // Distancia en Metros
+        //Double tempBaseLengthCoord = tempBaseLength * 0.000008998719243599958;
+        Double tempBaseLengthCoord = tempBaseLength *   0.00000899321012635446; //111195 m.
+
+
+        tempPointTriangule[0] = tempGeofence[tempPositionDistance[0]];
+        tempPointTriangule[1] = tempGeofence[tempPositionDistance[1]];
+        tempPointTriangule[2]= position;
+
+        Double tempAreaTriangule = AreaPolygon(tempPointTriangule);
+
+        if(tempBaseLength != 0.0){
+            tempDistanceToGeofence = tempAreaTriangule/tempBaseLengthCoord;
+        }
+
+        Log.e("distanceToGeofence", String.valueOf(ConvCoordToMetros(tempDistanceToGeofence)));
+        return ConvCoordToMetros(tempDistanceToGeofence);
+
     }
 
 }

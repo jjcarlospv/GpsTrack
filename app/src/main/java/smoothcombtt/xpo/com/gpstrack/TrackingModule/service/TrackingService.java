@@ -88,7 +88,7 @@ public class TrackingService extends Service {
 
         handlerSampleLocation = new Handler();
         handlerGetDataPeriod = new Handler();
-        startAccelerometer(); // Iniciamos el Sensor Manager
+        //startAccelerometer(); // Iniciamos el Sensor Manager
 
         arrayLocations = new ArrayList<Location>();
         arrayNETLocations = new ArrayList<Location>();
@@ -186,7 +186,7 @@ public class TrackingService extends Service {
     static float tempY = 0;
     static float tempZ = 0;
 
-    static boolean isMoving = false;
+    static boolean isMoving = true;
 
     private class CustomSensorEventListener implements SensorEventListener {
 
@@ -236,7 +236,7 @@ public class TrackingService extends Service {
             Location location2 = new Location(LocationManager.GPS_PROVIDER);
             location2.setLatitude(-12.120298);
             location2.setLongitude(-77.036816);
-            Log.e("Distance", String.valueOf(TrackingService.distance(location1, location2)));
+            //Log.e("Distance", String.valueOf(TrackingService.distance(location1, location2)));
 
 
             tempStringLat = getSharedPreferences(GpsConstants.SHARE_POSITION_TRACK, MODE_PRIVATE)
@@ -453,7 +453,7 @@ public class TrackingService extends Service {
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         //locationManager.getProvider(locationManager.getBestProvider(createCoarseCriteria(), true));
 
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerNetwork);
+        //locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, locationListenerNetwork);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
         Log.e("LocService", "StartService");
     }
@@ -496,7 +496,7 @@ public class TrackingService extends Service {
      */
     private void StopLocationService() {
         if (locationManager != null) {
-            locationManager.removeUpdates(locationListenerNetwork);
+            //locationManager.removeUpdates(locationListenerNetwork);
             locationManager.removeUpdates(locationListenerGps);
             locationManager = null;
             Log.e("LocService", "StopService");
