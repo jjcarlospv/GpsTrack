@@ -502,7 +502,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_geoposition);
                     }
                     else{
-                        mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker);
+                        //mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker);
                     }
 
                     Double tempDistanceGeo = Helper.distanceToGeofence(Helper.toPointArray(geofence1), Helper.toPoint(coordinates));
