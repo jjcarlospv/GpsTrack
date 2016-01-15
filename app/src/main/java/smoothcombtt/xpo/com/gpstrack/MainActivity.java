@@ -135,14 +135,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         geofence1[6] = -12.175577;
         geofence1[7] = -77.004567;
 
-        act_main_start  = (Button)findViewById(R.id.act_main_start);
-        act_main_stop  = (Button)findViewById(R.id.act_main_stop);
-        act_main_show_markers = (Button)findViewById(R.id.act_main_show_markers);
-        act_main_new_ruta  = (Button)findViewById(R.id.act_main_new_ruta);
-        act_main_clean_data = (Button)findViewById(R.id.act_main_clean_data);
-        act_main_speed = (TextView)findViewById(R.id.act_main_speed);
-        act_main_distance_1 = (TextView)findViewById(R.id.act_main_distance_1);
-        act_main_distance_2 = (TextView)findViewById(R.id.act_main_distance_2);
+        act_main_start = (Button) findViewById(R.id.act_main_start);
+        act_main_stop = (Button) findViewById(R.id.act_main_stop);
+        act_main_show_markers = (Button) findViewById(R.id.act_main_show_markers);
+        act_main_new_ruta = (Button) findViewById(R.id.act_main_new_ruta);
+        act_main_clean_data = (Button) findViewById(R.id.act_main_clean_data);
+        act_main_speed = (TextView) findViewById(R.id.act_main_speed);
+        act_main_distance_1 = (TextView) findViewById(R.id.act_main_distance_1);
+        act_main_distance_2 = (TextView) findViewById(R.id.act_main_distance_2);
 
         act_main_start.setOnClickListener(this);
         act_main_stop.setOnClickListener(this);
@@ -150,9 +150,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         act_main_new_ruta.setOnClickListener(this);
         act_main_clean_data.setOnClickListener(this);
 
-        container = (FrameLayout)findViewById(R.id.container);
+        container = (FrameLayout) findViewById(R.id.container);
         mapFragment = new MapFragment();
-        getFragmentManager().beginTransaction().replace(R.id.container,mapFragment).commit();
+        getFragmentManager().beginTransaction().replace(R.id.container, mapFragment).commit();
 
         mapFragment.setInterfaceMapStatus(new MapFragment.InterfaceMapStatus() {
             @Override
@@ -168,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-        speedometer = (SpeedometerGauge)findViewById(R.id.speedometer);
+        speedometer = (SpeedometerGauge) findViewById(R.id.speedometer);
         // configure value range and ticks
         speedometer.setMaxSpeed(300);
         speedometer.setMajorTickStep(30);
@@ -191,10 +191,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-
-
-
-    public void ShowGeofence(Double [] geofenceOrigin, Double [] geofenceDestination){
+    public void ShowGeofence(Double[] geofenceOrigin, Double[] geofenceDestination) {
 
         /*Double[] poly = new Double[10];
         poly[0] = 9.0;
@@ -216,12 +213,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tri[4] = 6.0;
         tri[5] = 1.0;*/
 
-        for(int i = 0; i<geofenceOrigin.length-1; i+=2){
-            mapFragment.addMarkerWithImageSource(geofenceOrigin[i], geofenceOrigin[i+1], R.mipmap.ic_marker_geofence);
+        for (int i = 0; i < geofenceOrigin.length - 1; i += 2) {
+            mapFragment.addMarkerWithImageSource(geofenceOrigin[i], geofenceOrigin[i + 1], R.mipmap.ic_marker_geofence);
         }
 
-        for(int i = 0; i<geofenceDestination.length-1; i+=2){
-            mapFragment.addMarkerWithImageSource(geofenceDestination[i], geofenceDestination[i+1], R.mipmap.ic_marker_geofence);
+        for (int i = 0; i < geofenceDestination.length - 1; i += 2) {
+            mapFragment.addMarkerWithImageSource(geofenceDestination[i], geofenceDestination[i + 1], R.mipmap.ic_marker_geofence);
         }
 
 
@@ -250,9 +247,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         act_main_distance_2.setText(String.valueOf(tempDistanceGeo));*/
     }
 
-    public void ShowPath(ArrayList<LatLng> arrayList){
+    public void ShowPath(ArrayList<LatLng> arrayList) {
 
-        for(int i = 0; i < arrayList.size(); i++){
+        for (int i = 0; i < arrayList.size(); i++) {
             mapFragment.addMarkerWithImageSource(arrayList.get(i).latitude, arrayList.get(i).longitude, R.mipmap.ic_marker_path);
         }
 
@@ -332,7 +329,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
 
-        switch(view.getId()){
+        switch (view.getId()) {
 
             case R.id.act_main_start:
                 //startService(new Intent(MainActivity.this, TrackingService.class));
@@ -341,8 +338,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 if ((locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))) {
                     startService(new Intent(MainActivity.this, TrackingService.class));
-                }
-                else{
+                } else {
                     AlertDialog.Builder b = new AlertDialog.Builder(MainActivity.this);
                     final AlertDialog create = b.create();
                     create.setTitle(getResources().getString(R.string.GPS_error_title));
@@ -373,7 +369,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.act_main_new_ruta:
-                ShowNewRuta();
+                //ShowNewRuta();
+
+
+                final ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
+                /*latLngs.add(new LatLng(-12.121029, -77.036852));
+                latLngs.add(new LatLng(-12.120748, -77.037030));
+                latLngs.add(new LatLng(-12.120249, -77.036852));
+                latLngs.add(new LatLng(-12.119207, -77.036839));
+                latLngs.add(new LatLng(-12.116800, -77.035665));
+                latLngs.add(new LatLng(-12.115914, -77.032909));
+                latLngs.add(new LatLng(-12.113999, -77.032361));
+                latLngs.add(new LatLng(-12.112677, -77.029885));*/
+
+                //latLngs.add(new LatLng(-12.130114, -77.023742)); // Reducto
+                latLngs.add(new LatLng(-12.127901, -77.027027));
+                latLngs.add(new LatLng(-12.125859, -77.033428));
+                latLngs.add(new LatLng(-12.126498, -77.035908));
+                latLngs.add(new LatLng(-12.120336, -77.035800));
+                //latLngs.add(new LatLng(-12.120860, -77.037126));
+                //latLngs.add(new LatLng(-12.120642, -77.036954));
+                latLngs.add(new LatLng(-12.024450, -77.048311));
+
+
+
+
+                DrawRouteWithList(latLngs);
+                setInterfacePointsList(new InterfacePointsList() {
+                    @Override
+                    public void getPointsList(List<LatLng> latLngs) {
+
+                        if ((latLngs != null) && (latLngs.size() > 0)) {
+
+                            for (int j = 0; j < latLngs.size(); j++) {
+
+                                mapFragment.googleMap.addMarker(new MarkerOptions()
+                                        .position(latLngs.get(j))
+                                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_sweet_marker)));
+                            }
+                        }
+                    }
+                });
+
                 break;
 
             case R.id.act_main_clean_data:
@@ -383,16 +420,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void ShowMarkers(){
+    private void ShowMarkers() {
 
         Cursor cursor = getContentResolver().query(TrackingProvider.URI_SAVE_POSITION, null, null, null, null);
         final ArrayList<LatLng> latLngsMain = new ArrayList<LatLng>();
 
-        if(cursor != null){
+        if (cursor != null) {
 
             mapFragment.CleanMap();
 
-            while(cursor.moveToNext()){
+            while (cursor.moveToNext()) {
 
                 Double tempLat = cursor.getDouble(1);
                 Double tempLng = cursor.getDouble(2);
@@ -400,21 +437,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 latLngsMain.add(new LatLng(tempLat, tempLng));
             }
 
-            for(int i = 0; i < latLngsMain.size(); i++){
+            for (int i = 0; i < latLngsMain.size(); i++) {
                 mapFragment.addMarker(latLngsMain.get(i).latitude, latLngsMain.get(i).longitude);
             }
         }
     }
 
-    private void ShowNewRuta(){
+    private void ShowNewRuta() {
         Cursor cursor = getContentResolver().query(TrackingProvider.URI_SAVE_POSITION, null, null, null, null);
         final ArrayList<LatLng> latLngsMain = new ArrayList<LatLng>();
 
-        if(cursor != null){
+        if (cursor != null) {
 
             mapFragment.CleanMap();
 
-            while(cursor.moveToNext()){
+            while (cursor.moveToNext()) {
 
                 Double tempLat = cursor.getDouble(1);
                 Double tempLng = cursor.getDouble(2);
@@ -422,15 +459,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 latLngsMain.add(new LatLng(tempLat, tempLng));
             }
 
-            if((latLngsMain.size() > 1)&&(latLngsMain != null)){
+            if ((latLngsMain.size() > 1) && (latLngsMain != null)) {
                 DrawRouteWithList(latLngsMain);
                 setInterfacePointsList(new InterfacePointsList() {
                     @Override
                     public void getPointsList(List<LatLng> latLngs) {
 
-                        if((latLngs != null)&&(latLngs.size() > 0)){
+                        if ((latLngs != null) && (latLngs.size() > 0)) {
 
-                            for(int j = 0; j<latLngs.size(); j++){
+                            for (int j = 0; j < latLngs.size(); j++) {
 
                                 mapFragment.googleMap.addMarker(new MarkerOptions()
                                         .position(latLngs.get(j))
@@ -463,7 +500,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            switch(intent.getAction()){
+            switch (intent.getAction()) {
 
                 case GpsConstants.POSITION_ACTION:
                     broadCLatitude = intent.getStringExtra(GpsConstants.PROGRESS_LATITUDE);
@@ -487,21 +524,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     // Comprobamos si esta cerca de un punto de la ruta
                     outPath = Helper.isNearPath(arrayPathLoc, location);
 
-                    if(outPath){
+                    if (outPath) {
                         mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker);
-                    }
-                    else{
+                    } else {
                         mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_out_path);
                     }
 
 
                     //Comprobamos si estamos dentro de un Geofence
-                    insideFence =  Helper.isInsideGeofence(Helper.toPointArray(geofence1), Helper.toPoint(coordinates));
+                    insideFence = Helper.isInsideGeofence(Helper.toPointArray(geofence1), Helper.toPoint(coordinates));
 
-                    if(insideFence){
+                    if (insideFence) {
                         mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_geoposition);
-                    }
-                    else{
+                    } else {
                         //mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker);
                     }
 
@@ -515,19 +550,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 case GpsConstants.GPS_STOPPED:
 
-                        AlertDialog.Builder b = new AlertDialog.Builder(MainActivity.this);
-                        final AlertDialog create = b.create();
-                        create.setTitle(getResources().getString(R.string.GPS_error_title));
-                        create.setCancelable(true);
-                        create.setMessage(getResources().getString(R.string.GPS_error));
-                        create.setButton(getResources().getString(R.string.lblOK),
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        create.cancel();
-                                    }
-                                });
-                        create.show();
+                    AlertDialog.Builder b = new AlertDialog.Builder(MainActivity.this);
+                    final AlertDialog create = b.create();
+                    create.setTitle(getResources().getString(R.string.GPS_error_title));
+                    create.setCancelable(true);
+                    create.setMessage(getResources().getString(R.string.GPS_error));
+                    create.setButton(getResources().getString(R.string.lblOK),
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    create.cancel();
+                                }
+                            });
+                    create.show();
                     break;
 
                 case GpsConstants.SPEED_ACTION:
@@ -546,7 +581,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-
     private ArrayList<Polyline> polylines;
     ArrayList<Polyline> newPolylines;
 
@@ -560,7 +594,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Routing routing;
     private ProgressDialog dialog;
 
-    public void DrawRouteWithList(final ArrayList<LatLng> latLngs ) {
+    public void DrawRouteWithList(final ArrayList<LatLng> latLngs) {
 
      /*  final ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
         latLngs.add(new LatLng(-12.121029, -77.036852));
@@ -576,9 +610,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final int groupEl = GpsConstants.SWEET_PATH_GROUP;
         final Double elements = Double.valueOf(groupEl);
 
-        rest = (latLngs.size())% groupEl;
-        groups = (latLngs.size()- rest)/groupEl;
-
+        rest = (latLngs.size()) % groupEl;
+        groups = (latLngs.size() - rest) / groupEl;
 
 
         dialog = new ProgressDialog(MainActivity.this);
@@ -588,15 +621,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         tempPoints = new ArrayList<LatLng>();
 
-        for(int g = 0; g < groups; g++){
+        for (int g = 0; g < groups; g++) {
 
             tempLatLngList = new ArrayList<LatLng>();
 
-            for(int item = groupEl*g; item < groupEl* (g +1); item ++){
+            for (int item = groupEl * g; item < groupEl * (g + 1); item++) {
                 tempLatLngList.add(latLngs.get(item));
             }
 
-            if((tempLatLngList != null) && (tempLatLngList.size() > 1)){
+            if ((tempLatLngList != null) && (tempLatLngList.size() > 1)) {
                 routing = new Routing.Builder()
                         .travelMode(AbstractRouting.TravelMode.DRIVING)
                         .optimize(true)
@@ -610,11 +643,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         tempLatLngList = new ArrayList<LatLng>();
 
-        for(int g = groupEl*groups; g < groupEl*groups + rest; g++){
+        for (int g = groupEl * groups; g < groupEl * groups + rest; g++) {
             tempLatLngList.add(latLngs.get(g));
         }
 
-        if((tempLatLngList != null) && (tempLatLngList.size() > 1)){
+        if ((tempLatLngList != null) && (tempLatLngList.size() > 1)) {
             routing = new Routing.Builder()
                     .travelMode(AbstractRouting.TravelMode.DRIVING)
                     .withListener(routingListener)
@@ -690,7 +723,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             interfacePointsList.getPointsList(tempPoints);
-            if(dialog != null){
+            if (dialog != null) {
                 dialog.dismiss();
             }
 
@@ -709,7 +742,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private InterfacePointsList interfacePointsList;
 
-    public interface InterfacePointsList{
+    public interface InterfacePointsList {
         void getPointsList(List<LatLng> latLngs);
     }
 

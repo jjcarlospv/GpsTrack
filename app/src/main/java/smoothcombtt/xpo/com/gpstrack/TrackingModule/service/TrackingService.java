@@ -35,6 +35,7 @@ public class TrackingService extends Service {
     private static final int INIT_TIME = 5000;
     private static final int SAMPLE_TIME = 1000 * 4;
     private static final int GET_INFO_TIME = 1000 * 4;
+    private static final Double UMBRAL = 0.00045;  //0.00045
 
     private static final int MULTIPLICATOR = 100000000;
     private static final Double DIVIDER = 100000000.0;
@@ -93,6 +94,7 @@ public class TrackingService extends Service {
         arrayLocations = new ArrayList<Location>();
         arrayNETLocations = new ArrayList<Location>();
         currentLocation = new Location(LocationManager.GPS_PROVIDER);
+        currentNETLocation = new Location(LocationManager.GPS_PROVIDER);
         newLocation = new Location(LocationManager.GPS_PROVIDER);
         originLocation = new Location(LocationManager.GPS_PROVIDER);
         destinationlocation = new Location(LocationManager.GPS_PROVIDER);
@@ -102,7 +104,7 @@ public class TrackingService extends Service {
             public void run() {
                 Log.e("SamplePeriod", "Stop");
 
-                StartlocationService();
+                //StartlocationService();
 
                 handlerGetDataPeriod.postDelayed(runnableGetDataPeriod, GET_INFO_TIME);
                 Log.e("GetDataPeriod", "Start");
@@ -114,7 +116,7 @@ public class TrackingService extends Service {
             public void run() {
                 Log.e("GetDataPeriod", "Stop");
 
-                StopLocationService();
+                //StopLocationService();
                 //Calculamos la velocidad
                 speedLocation = 1000*(TrackingService.distance(originLocation, destinationlocation))/ SAMPLE_TIME;
                 originLocation = destinationlocation;
@@ -135,7 +137,7 @@ public class TrackingService extends Service {
         handlerGetDataPeriod.postDelayed(runnableGetDataPeriod, GET_INFO_TIME);
         Log.e("GetDataPeriod", "Start");
 
-        return START_NOT_STICKY;
+        return START_STICKY; // before it was START_NOT_STICKY
     }
 
     @Override
@@ -284,7 +286,7 @@ public class TrackingService extends Service {
 
                         //destinationlocation = location;
 
-                        if ((deltaLat > 0.00045) || (deltaLng > 0.00045)) {
+                        if ((deltaLat > UMBRAL) || (deltaLng > UMBRAL)) {
 
                             if (isMoving) {
                                 Log.e("isMoving", "TRUE");
@@ -393,7 +395,7 @@ public class TrackingService extends Service {
 
                         destinationlocation = location;
 
-                        if ((deltaLat > 0.00045) || (deltaLng > 0.00045)) {
+                        if ((deltaLat > UMBRAL) || (deltaLng > UMBRAL)) {
 
                             if (isMoving) {
                                 Log.e("isMoving", "TRUE");

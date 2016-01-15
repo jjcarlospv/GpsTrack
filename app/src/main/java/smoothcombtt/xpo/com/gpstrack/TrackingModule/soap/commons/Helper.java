@@ -398,6 +398,11 @@ public class Helper
      * @return
      */
     private static Double distance(Location one, Location two) {
+
+        if((one == null)||(two == null)){
+            return null;
+        }
+
         int R = 6371000;
         Double dLat = toRad(two.getLatitude() - one.getLatitude());
         Double dLon = toRad(two.getLongitude() - one.getLongitude());
