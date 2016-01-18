@@ -1,6 +1,7 @@
 package smoothcombtt.xpo.com.gpstrack.TrackingModule.fragment;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
@@ -27,11 +28,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import smoothcombtt.xpo.com.gpstrack.R;
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.GpsConstants;
 
 /**
  * Created by jose.paucar on 02/12/2015.
  */
-public class MapFragment extends com.google.android.gms.maps.MapFragment implements OnMapReadyCallback, GoogleMap.OnMyLocationChangeListener, GoogleMap.OnMyLocationButtonClickListener {
+public class MapFragment extends com.google.android.gms.maps.MapFragment implements OnMapReadyCallback, GoogleMap.OnMyLocationChangeListener, GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMapClickListener {
 
 
     public GoogleMap googleMap;
@@ -53,8 +55,20 @@ public class MapFragment extends com.google.android.gms.maps.MapFragment impleme
         googleMap.setMyLocationEnabled(true);
         googleMap.setOnMyLocationButtonClickListener(this);
         googleMap.setOnMyLocationChangeListener(this);
-
+        googleMap.setOnMapClickListener(this);
         interfaceMapStatus.getMapStatus(1);
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+
+        Intent intentTestService = new Intent(GpsConstants.POSITION_ACTION);
+        intentTestService.putExtra(GpsConstants.PROGRESS_LATITUDE, String.valueOf(latLng.latitude));
+        intentTestService.putExtra(GpsConstants.PROGRESS_LONGITUDE, String.valueOf(latLng.longitude));
+        //intentTestService.putExtra(GpsConstants.PROGRESS_PROV, String.valueOf(newLocation.getProvider()));
+        //intentTestService.putExtra(GpsConstants.PROGRESS_SPEED, String.valueOf(newLocation.getSpeed()));
+        intentTestService.addFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
+        getActivity().sendBroadcast(intentTestService);
 
     }
 

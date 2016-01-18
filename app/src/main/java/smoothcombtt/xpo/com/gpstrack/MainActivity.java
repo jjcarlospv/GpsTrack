@@ -37,6 +37,7 @@ import com.google.android.gms.maps.model.Polyline;
 import java.util.ArrayList;
 import java.util.List;
 
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.bean.BERouteLocation;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.GpsConstants;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.Polygon;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.provider.TrackingProvider;
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     boolean insideFence = false;
     boolean outPath = false;
+    boolean outPathNew = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -326,6 +328,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         builder.show();
     }
 
+
+    BERouteLocation[] beRouteLocations;
+    ArrayList<LatLng> testLatLng;
+
     @Override
     public void onClick(View view) {
 
@@ -401,12 +407,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         if ((latLngs != null) && (latLngs.size() > 0)) {
 
+                            beRouteLocations = new BERouteLocation[tempPoints.size()];
+                            BERouteLocation beRouteLocation;
+                            testLatLng = new ArrayList<LatLng>();
+
                             for (int j = 0; j < latLngs.size(); j++) {
+                                testLatLng.add(new LatLng(latLngs.get(j).latitude, latLngs.get(j).longitude));
 
                                 mapFragment.googleMap.addMarker(new MarkerOptions()
                                         .position(latLngs.get(j))
                                         .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_sweet_marker)));
+
+                                beRouteLocation = new BERouteLocation();
+                                beRouteLocation.setLatitude(String.valueOf(tempPoints.get(j).latitude));
+                                beRouteLocation.setLongitude(String.valueOf(tempPoints.get(j).longitude));
+                                beRouteLocations[j] = beRouteLocation;
                             }
+
+                            // Realizando los cálculos necesarios para la ruta
+                            beRouteLocations = Helper.GetParamBetweenPoints(beRouteLocations);
+
                         }
                     }
                 });
@@ -522,23 +542,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
                     // Comprobamos si esta cerca de un punto de la ruta
-                    outPath = Helper.isNearPath(arrayPathLoc, location);
+                    outPath = Helper.isNearPath(testLatLng, location);
 
-                    if (outPath) {
+                    if(beRouteLocations != null){
+                        outPathNew = Helper.isNearPathMichelin(beRouteLocations, GpsConstants.WAYPOINTS_GROUP, location);
+                    }
+
+
+                    if (outPathNew) {
                         mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker);
                     } else {
                         mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_out_path);
                     }
 
 
+                    /*if (outPathNew) {
+                        mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_new_position);//Green
+                    } else {
+                        mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_geoposition);//Blue
+                    }*/
+
+/*
                     //Comprobamos si estamos dentro de un Geofence
                     insideFence = Helper.isInsideGeofence(Helper.toPointArray(geofence1), Helper.toPoint(coordinates));
 
                     if (insideFence) {
                         mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_geoposition);
                     } else {
-                        //mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker);
-                    }
+                        mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker);
+                    }*/
 
                     Double tempDistanceGeo = Helper.distanceToGeofence(Helper.toPointArray(geofence1), Helper.toPoint(coordinates));
                     act_main_distance_1.setText(String.valueOf(tempDistanceGeo));

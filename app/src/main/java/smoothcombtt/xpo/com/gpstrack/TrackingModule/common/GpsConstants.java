@@ -26,6 +26,27 @@ public class GpsConstants {
 
     public static final String GPS_STOPPED = "GpsStopped";
 
+    // Variables para guardar la ultima posicion de la ruta recorrida
+    public static final String SHARE_TRACKING = "SmoothComBttTracking";
+    public static final String SHARE_TRACKING_LAST_WAYPOINT = "SmoothComBttTrackingLastWaypoint";
+
     public static int SWEET_PATH_GROUP = 10;
+
+
+    // Parametros para los calculos de distancia y direccion entre puntos
+    public final static Double SHORT_DISTANCE = 40.0;
+    public final static Double MEDIUM_DISTANCE = 90.0;
+
+    public final static Double DELTA_DIRECTION = 20.0;//0.34907; // 20° en radianes
+    public final static int WAYPOINTS_GROUP = 100;
+
+    public final static Double PI_VALUE = 3.1416;
+    public final static Double ROUND_NUMBER = 10000.0;
+    public final static Double IN_GRADOS_PARAM = 111195.0;
+    public final static Double DIVIDER = 1.0;
+
+    public final static int STATUS_ROUTE_LOCATION_NORMAL = 0;
+    public final static int STATUS_ROUTE_LOCATION_OK = 1;
+    public final static int STATUS_ROUTE_LOCATION_REFUSED = 2;
 
 }

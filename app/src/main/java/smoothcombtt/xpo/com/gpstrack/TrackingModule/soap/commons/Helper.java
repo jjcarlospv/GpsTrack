@@ -20,29 +20,25 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Vector;
 
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.bean.BERouteLocation;
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.GpsConstants;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.Point;
 
 /**
  * @author rodolfo.burlando
  */
-public class Helper
-{
+public class Helper {
 
     public static final int EQUALS = 0;
     public static final int STARTS_WITH = 1;
 
-    public Helper()
-    {
+    public Helper() {
     }
 
-    public static boolean findInArray(String[] data, String toFind, int findingMode)
-    {
-        if (data != null && data.length > 0)
-        {
-            for (int i = 0; i < data.length; i++)
-            {
-                if (data[i].startsWith(toFind))
-                {
+    public static boolean findInArray(String[] data, String toFind, int findingMode) {
+        if (data != null && data.length > 0) {
+            for (int i = 0; i < data.length; i++) {
+                if (data[i].startsWith(toFind)) {
                     return true;
                 }
             }
@@ -51,8 +47,7 @@ public class Helper
         return false;
     }
 
-    static public String getCurrentDate()
-    {
+    static public String getCurrentDate() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
         String sCurrentDate;
 
@@ -62,8 +57,7 @@ public class Helper
         return sCurrentDate;
     }
 
-    static public String getCurrentDate(String format)
-    {
+    static public String getCurrentDate(String format) {
         SimpleDateFormat dateFormat = new SimpleDateFormat(format);
         String sCurrentDate;
 
@@ -72,8 +66,7 @@ public class Helper
         return sCurrentDate;
     }
 
-    public static int compareVersions(String version, String newestVersion)
-    {
+    public static int compareVersions(String version, String newestVersion) {
         version = version.trim();
         newestVersion = newestVersion.trim();
         Vector disasembledVersion = StringHelper.split(version, '.');
@@ -81,73 +74,55 @@ public class Helper
         int versionInt = 0;
         int newestVersionInt = 0;
         int mayorSize = disasembledVersion.size();
-        if (disasembledNewestVersion.size() > mayorSize)
-        {
+        if (disasembledNewestVersion.size() > mayorSize) {
             mayorSize = disasembledNewestVersion.size();
         }
-        for (int i = mayorSize - 1, j = 0; i >= 0; i--, j++)
-        {
-            if (i < disasembledVersion.size())
-            {
+        for (int i = mayorSize - 1, j = 0; i >= 0; i--, j++) {
+            if (i < disasembledVersion.size()) {
                 double num = Integer.parseInt(disasembledVersion.elementAt(i).toString()) * Math.pow(10, j);
                 versionInt += num;
             }
         }
-        for (int i = mayorSize - 1, j = 0; i >= 0; i--, j++)
-        {
-            if (i < disasembledNewestVersion.size())
-            {
+        for (int i = mayorSize - 1, j = 0; i >= 0; i--, j++) {
+            if (i < disasembledNewestVersion.size()) {
                 newestVersionInt += (Integer.parseInt(disasembledNewestVersion.elementAt(i).toString()) * Math.pow(10, j));
             }
         }
 
         LogHelper.logDebug("older:" + versionInt);
         LogHelper.logDebug("newer:" + newestVersionInt);
-        if (versionInt < newestVersionInt)
-        {
+        if (versionInt < newestVersionInt) {
             return -1;
-        }
-        else if (versionInt == newestVersionInt)
-        {
+        } else if (versionInt == newestVersionInt) {
             return 0;
-        }
-        else if (versionInt > newestVersionInt)
-        {
+        } else if (versionInt > newestVersionInt) {
             return 1;
-        }
-        else
-        {
+        } else {
             throw new RuntimeException("Unespected Error");
         }
     }
 
-    public static String removeAllChars(String version, char c)
-    {
+    public static String removeAllChars(String version, char c) {
         char[] versionChar = version.toCharArray();
         StringBuffer ret = new StringBuffer();
-        for (int i = 0; i < versionChar.length; i++)
-        {
-            if (versionChar[i] != c)
-            {
+        for (int i = 0; i < versionChar.length; i++) {
+            if (versionChar[i] != c) {
                 ret.append(versionChar[i]);
             }
         }
         return ret.toString().trim();
     }
 
-    public static Point toPoint(Double[] coordinates)
-    {
+    public static Point toPoint(Double[] coordinates) {
         Point ret = new Point();
         ret.latitude = coordinates[0].doubleValue();
         ret.longitude = coordinates[1].doubleValue();
         return ret;
     }
 
-    public static Point[] toPointArray(Double[] fence)
-    {
+    public static Point[] toPointArray(Double[] fence) {
         Point[] ret = new Point[fence.length / 2];
-        for (int i = 0; i < ret.length; i++)
-        {
+        for (int i = 0; i < ret.length; i++) {
             ret[i] = new Point();
             ret[i].latitude = fence[2 * i].doubleValue();
             ret[i].longitude = fence[2 * i + 1].doubleValue();
@@ -155,13 +130,10 @@ public class Helper
         return ret;
     }
 
-    public static void deleteArrayItem(Object[] array, Object item)
-    {
+    public static void deleteArrayItem(Object[] array, Object item) {
         Vector ret = new Vector();
-        for (int i = 0; i < array.length; i++)
-        {
-            if (!array[i].equals(item))
-            {
+        for (int i = 0; i < array.length; i++) {
+            if (!array[i].equals(item)) {
                 ret.addElement(array[i]);
             }
         }
@@ -174,8 +146,7 @@ public class Helper
      *
      * @return
      */
-    public static String getCurrentTime()
-    {
+    public static String getCurrentTime() {
         SimpleDateFormat formatUTC = new SimpleDateFormat("yyyyMMdd HH:mm");
         formatUTC.setTimeZone(TimeZone.getDefault());
         String date_long = (new Date()).getTime() + "";
@@ -204,42 +175,24 @@ public class Helper
         StringBuffer hours_timezone = new StringBuffer(timezoneStr).insert(3, ":");
         String hours_timezonestring = hours_timezone.toString();
 
-        if (tzname.equals("Eastern Standard Time"))
-        {
+        if (tzname.equals("Eastern Standard Time")) {
             tzname = "(GMT-05:00) Eastern Time (US & Canada)";
-        }
-        else
-        {
-            if (tzname.equals("Central Standard Time"))
-            {
+        } else {
+            if (tzname.equals("Central Standard Time")) {
                 tzname = "(GMT-06:00) Central Time (US & Canada)";
-            }
-            else
-            {
-                if (tzname.equals("Mountain Standard Time"))
-                {
+            } else {
+                if (tzname.equals("Mountain Standard Time")) {
                     tzname = "(GMT-07:00) Mountain Time (US & Canada)";
-                }
-                else
-                {
-                    if (tzname.equals("Pacific Standard Time"))
-                    {
+                } else {
+                    if (tzname.equals("Pacific Standard Time")) {
                         tzname = "(GMT-08:00) Pacific Time (US & Canada)";
-                    }
-                    else
-                    {
-                        if (tzname.equals("Alaska Standard Time"))
-                        {
+                    } else {
+                        if (tzname.equals("Alaska Standard Time")) {
                             tzname = "(GMT-09:00) Alaska";
-                        }
-                        else
-                        {
-                            if (tzname.equals("Hawaii-Aleutian Standard Time"))
-                            {
+                        } else {
+                            if (tzname.equals("Hawaii-Aleutian Standard Time")) {
                                 tzname = "(GMT-10:00) Hawaii";
-                            }
-                            else
-                            {
+                            } else {
 
                                 SimpleDateFormat simpleFormat = new SimpleDateFormat("Z");
                                 String dateResult = simpleFormat.format(new Date());
@@ -255,8 +208,7 @@ public class Helper
         return tzname;
     }
 
-    public static void startNotification()
-    {
+    public static void startNotification() {
         // The TUNE (bar 1 and 2 of Islamey by Balakirev).
         final short BFlat = 466; // 466.16
         final short AFlat = 415; // 415.30
@@ -296,8 +248,7 @@ public class Helper
         // Alert.startBuzzer(TUNE, VOLUME);
     }
 
-    public static void stopNotification()
-    {
+    public static void stopNotification() {
         // if (Alert.isVibrateSupported())
         // Alert.stopVibrate();
         // if (Alert.isAudioSupported())
@@ -308,87 +259,65 @@ public class Helper
     }
 
 
-    public static Hashtable getRemoteJad(String jadUrl)
-    {
+    public static Hashtable getRemoteJad(String jadUrl) {
         throw new RuntimeException("Not implemented");
     }
 
-    public static TimeZone parseTimezone(String tz)
-    {
+    public static TimeZone parseTimezone(String tz) {
         if (tz.equals("CD"))// Central Daylight Time
         {
             return TimeZone.getTimeZone("America/Chicago");
-        }
-        else if (tz.equals("CS"))// Central Standard Time
+        } else if (tz.equals("CS"))// Central Standard Time
         {
             return TimeZone.getTimeZone("America/Chicago");
-        }
-        else if (tz.equals("ED"))// Eastern Daylight Time
+        } else if (tz.equals("ED"))// Eastern Daylight Time
         {
             return TimeZone.getTimeZone("America/New_York");
-        }
-        else if (tz.equals("ES"))// Eastern Standard Time
+        } else if (tz.equals("ES"))// Eastern Standard Time
         {
             return TimeZone.getTimeZone("America/New_York");
-        }
-        else if (tz.equals("MD"))// Mountain Daylight Time
+        } else if (tz.equals("MD"))// Mountain Daylight Time
         {
             return TimeZone.getTimeZone("America/Denver");
-        }
-        else if (tz.equals("MS"))// Mountain Standard Time
+        } else if (tz.equals("MS"))// Mountain Standard Time
         {
             return TimeZone.getTimeZone("America/Phoenix");
-        }
-        else if (tz.equals("PD"))// Pacific Daylight Time
+        } else if (tz.equals("PD"))// Pacific Daylight Time
         {
             return TimeZone.getTimeZone("America/Los_Angeles");
-        }
-        else if (tz.equals("PS"))// Pacific Standard Time
+        } else if (tz.equals("PS"))// Pacific Standard Time
         {
             return TimeZone.getTimeZone("America/Los_Angeles");
-        }
-        else if (tz.equals("UT"))// Universal Time
+        } else if (tz.equals("UT"))// Universal Time
         {
             return TimeZone.getTimeZone("GMT");
-        }
-        else
-        {
+        } else {
             return TimeZone.getTimeZone("GMT");
         }
     }
 
-    public static String toPegasusTimezoneAsString(TimeZone tz)
-    {
+    public static String toPegasusTimezoneAsString(TimeZone tz) {
         String[] pegasusTz = {"CST", "CDT", "EST", "EDT", "MST", "MDT", "PST", "PDT", "UTC", "UTC"};
         String[] blackberryTz = {
                 "America/Chicago", "America/Chicago", "America/New_York", "America/New_York",
                 "America/Denver", "America/Phoenix", "America/Los_Angeles", "America/Los_Angeles", "GMT"
         };
-        for (int i = 0; i < blackberryTz.length; i++)
-        {
+        for (int i = 0; i < blackberryTz.length; i++) {
             TimeZone timeZone = TimeZone.getTimeZone(blackberryTz[i]);
-            if (tz.equals(timeZone))
-            {
-                if (tz.useDaylightTime())
-                {
+            if (tz.equals(timeZone)) {
+                if (tz.useDaylightTime()) {
                     return pegasusTz[i + 1];
-                }
-                else
-                {
+                } else {
                     return pegasusTz[i];
                 }
-            }
-            else if (tz.getID().equals("(GMT)") || tz.getID().equals("GMT"))
-            {
+            } else if (tz.getID().equals("(GMT)") || tz.getID().equals("GMT")) {
                 return "UT";
             }
         }
 
         return tz.toString();
     }
-
-    // Nuevos metodos para el geofence
-
+    /////////////////////////////////// Nuevos metodos para GPS /////////////////////////////////////////////
 
     /**
      * Metodo para calcular distancia entre dos puntos. Requiere 2 Locations
@@ -397,12 +326,21 @@ public class Helper
      * @param two
      * @return
      */
-    private static Double distance(Location one, Location two) {
+    public static Double distance(Location one, Location two) {
 
-        if((one == null)||(two == null)){
+        Double d = 0.0;
+
+        if ((one == null) || (two == null)) {
             return null;
         }
 
+        d = Double.valueOf(one.distanceTo(two));
+
+        /*float [] tempResults = new float[10];
+        Location.distanceBetween(one.getLatitude(), one.getLongitude(), two.getLatitude(), two.getLongitude(), tempResults);
+        tempResult = Double.valueOf(tempResults[0]);*/
+
+/*
         int R = 6371000;
         Double dLat = toRad(two.getLatitude() - one.getLatitude());
         Double dLon = toRad(two.getLongitude() - one.getLongitude());
@@ -411,11 +349,12 @@ public class Helper
         Double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
                 + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
         Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        Double d = R * c;
-
+        d = R * c;
+*/
         // Redondear a 3 decimales
         int dec = 3;
-        d = Math.round(d*Math.pow(10,3))/ Math.pow(10, 3);
+        d = Math.round(d * Math.pow(10, 3)) / Math.pow(10, 3);
+
         return d;
     }
 
@@ -432,7 +371,7 @@ public class Helper
 
         // Redondear a 3 decimales
         int dec = 3;
-        d = Math.round(d*Math.pow(10,3))/ Math.pow(10, 3);
+        d = Math.round(d * Math.pow(10, 3)) / Math.pow(10, 3);
         return d;
     }
 
@@ -440,60 +379,114 @@ public class Helper
         return d * Math.PI / 180;
     }
 
+    public static Double directionBetweenPoints(Location loc1, Location loc2) {
+        Double tempDirection = 0.0;
+/*
+        boolean isRigthSide = true;
+        boolean isUpSide = true;
+
+        Double deltaLat = 0.0;
+        Double deltaLng = 0.0;
+        Double tempDirection = 0.0;
+
+        Double tempLat1 = loc1.latitude;
+        Double tempLng1 = loc1.longitude;
+        Double tempLat2 = loc2.latitude;
+        Double tempLng2 = loc2.longitude;
+
+        deltaLat = Math.abs(tempLat2 - tempLat1);
+        deltaLng = Math.abs(tempLng2 - tempLng1);
+
+        if (tempLat2 > tempLat1) {
+            isUpSide = true;
+        } else {
+            isUpSide = false;
+        }
+
+        if (tempLng2 > tempLat1) {
+            isRigthSide = true;
+        } else {
+            isRigthSide = false;
+        }
+
+        tempDirection = Math.atan2(deltaLat, deltaLng);
+
+        // Buscando la posición del punto destino
+        if (isUpSide) {
+            if (isRigthSide) {
+                tempDirection = tempDirection;
+            } else {
+                tempDirection = Math.PI - tempDirection;
+            }
+        } else {
+            if (isRigthSide) {
+                tempDirection = 2 * Math.PI - tempDirection;
+            } else {
+                tempDirection = Math.PI + tempDirection;
+            }
+        }
+
+        */
+        tempDirection = Double.valueOf(loc1.bearingTo(loc2));
+        tempDirection = Math.round(tempDirection * GpsConstants.ROUND_NUMBER) / GpsConstants.ROUND_NUMBER;
+
+        return tempDirection;
+    }
 
     /**
      * Metodo para calcular el area de una region mediante coordenadas
+     *
      * @param points
      * @return
      */
-    public static Double AreaPolygon(Point [] points){
+    public static Double AreaPolygon(Point[] points) {
 
         Double tempD = 0.0;
         Double tempd = 0.0;
         Point[] tempPoints = new Point[points.length + 1];
 
-        for(int k = 0; k < points.length;k++){
+        for (int k = 0; k < points.length; k++) {
             tempPoints[k] = points[k];
         }
 
         tempPoints[tempPoints.length - 1] = points[0];
 
 
-        for(int i = 0; i < tempPoints.length-1; i++){
+        for (int i = 0; i < tempPoints.length - 1; i++) {
 
-            tempD = tempD + tempPoints[i].latitude * tempPoints[i+1].longitude;
+            tempD = tempD + tempPoints[i].latitude * tempPoints[i + 1].longitude;
         }
 
-        for(int j = 0; j < tempPoints.length-1; j++){
+        for (int j = 0; j < tempPoints.length - 1; j++) {
 
-            tempd = tempd + tempPoints[j+1].latitude * tempPoints[j].longitude;
+            tempd = tempd + tempPoints[j + 1].latitude * tempPoints[j].longitude;
         }
-        return Math.abs(tempD - tempd)*0.5;
+        return Math.abs(tempD - tempd) * 0.5;
     }
 
     /**
      * Metodo para verificar el ingreso de un punto al interior de un geofence
+     *
      * @param geofence
      * @param position
      * @return
      */
-    public static boolean isInsideGeofence(Point [] geofence, Point position){
+    public static boolean isInsideGeofence(Point[] geofence, Point position) {
 
-        Double tempAreaGeo =  AreaPolygon(geofence);
+        Double tempAreaGeo = AreaPolygon(geofence);
         Double tempSumSmallArea = 0.0;
         Point[] tempPoint = new Point[3];
 
-        for(int k = 0; k < geofence.length; k++){
+        for (int k = 0; k < geofence.length; k++) {
 
 
-            if(k == geofence.length-1){
+            if (k == geofence.length - 1) {
                 tempPoint[0] = geofence[k];
                 tempPoint[1] = geofence[0];
                 tempPoint[2] = position;
-            }
-            else{
+            } else {
                 tempPoint[0] = geofence[k];
-                tempPoint[1] = geofence[k+1];
+                tempPoint[1] = geofence[k + 1];
                 tempPoint[2] = position;
 
             }
@@ -501,13 +494,12 @@ public class Helper
             tempSumSmallArea = tempSumSmallArea + AreaPolygon(tempPoint);
         }
 
-        Log.e("AREA POLY",String.valueOf(tempAreaGeo));
-        Log.e("AREA SUM",String.valueOf(tempSumSmallArea));
+        Log.e("AREA POLY", String.valueOf(tempAreaGeo));
+        Log.e("AREA SUM", String.valueOf(tempSumSmallArea));
 
-        if(tempSumSmallArea > tempAreaGeo){
+        if (tempSumSmallArea > tempAreaGeo) {
             return false;
-        }
-        else{
+        } else {
             return true;
         }
 
@@ -515,43 +507,43 @@ public class Helper
 
     /**
      * Metodo para identificar si un punto se desvía del camino asignado
+     *
      * @param arrayPathLoc
      * @param currentLoc
      * @return
      */
-    public static boolean isNearPath(ArrayList<LatLng> arrayPathLoc, Location currentLoc){
+    public static boolean isNearPath(ArrayList<LatLng> arrayPathLoc, Location currentLoc) {
 
         boolean isInsideLat = false;
         boolean isInsideLng = false;
 
-        Double [] latPoly = new Double[4];
-        Double [] lngPoly = new Double[4];
+        Double[] latPoly = new Double[4];
+        Double[] lngPoly = new Double[4];
         Double widthPoly = 0.0005;
         Double heightPoly = 0.0005;
 
-        latPoly[0] = currentLoc.getLatitude() - (heightPoly/2.0);
-        latPoly[1] = currentLoc.getLatitude() + (heightPoly/2.0);
-        latPoly[2] = currentLoc.getLatitude() + (heightPoly/2.0);
-        latPoly[3] = currentLoc.getLatitude() - (heightPoly/2.0);
+        latPoly[0] = currentLoc.getLatitude() - (heightPoly / 2.0);
+        latPoly[1] = currentLoc.getLatitude() + (heightPoly / 2.0);
+        latPoly[2] = currentLoc.getLatitude() + (heightPoly / 2.0);
+        latPoly[3] = currentLoc.getLatitude() - (heightPoly / 2.0);
 
-        lngPoly[0] = currentLoc.getLongitude() + (widthPoly/2.0);
-        lngPoly[1] = currentLoc.getLongitude() + (widthPoly/2.0);
-        lngPoly[2] = currentLoc.getLongitude() - (widthPoly/2.0);
-        lngPoly[3] = currentLoc.getLongitude() - (widthPoly/2.0);
+        lngPoly[0] = currentLoc.getLongitude() + (widthPoly / 2.0);
+        lngPoly[1] = currentLoc.getLongitude() + (widthPoly / 2.0);
+        lngPoly[2] = currentLoc.getLongitude() - (widthPoly / 2.0);
+        lngPoly[3] = currentLoc.getLongitude() - (widthPoly / 2.0);
 
-        for(int i = 0; i < arrayPathLoc.size(); i++){
+        for (int i = 0; i < arrayPathLoc.size(); i++) {
 
-            if((latPoly[0] < arrayPathLoc.get(i).latitude)&&(arrayPathLoc.get(i).latitude < latPoly[1])){
+            if ((latPoly[0] < arrayPathLoc.get(i).latitude) && (arrayPathLoc.get(i).latitude < latPoly[1])) {
                 isInsideLat = true;
 
-                if((lngPoly[2] < arrayPathLoc.get(i).longitude)&&(arrayPathLoc.get(i).longitude < lngPoly[1])){
+                if ((lngPoly[2] < arrayPathLoc.get(i).longitude) && (arrayPathLoc.get(i).longitude < lngPoly[1])) {
                     isInsideLng = true;
                     break;
-                }
-                else{
+                } else {
                     isInsideLng = false;
                 }
-            }else{
+            } else {
                 isInsideLat = false;
             }
 
@@ -562,12 +554,75 @@ public class Helper
     }
 
     /**
+     * Metodo que calcula la cercanía de una posicion actual y un punto determinado
+     *
+     * @param pathPointLoc
+     * @param geolength
+     * @param currentLoc
+     * @return
+     */
+    public static boolean isNearCurrentPosition(Location pathPointLoc, Double geolength, Location currentLoc) {
+
+        boolean isInsideLat = false;
+        boolean isInsideLng = false;
+
+        Double[] latPoly = new Double[4];
+        Double[] lngPoly = new Double[4];
+        Double widthPoly = geolength;
+        Double heightPoly = geolength;
+
+        latPoly[0] = currentLoc.getLatitude() - (heightPoly / GpsConstants.DIVIDER);
+        latPoly[1] = currentLoc.getLatitude() + (heightPoly / GpsConstants.DIVIDER);
+        latPoly[2] = currentLoc.getLatitude() + (heightPoly / GpsConstants.DIVIDER);
+        latPoly[3] = currentLoc.getLatitude() - (heightPoly / GpsConstants.DIVIDER);
+
+        lngPoly[0] = currentLoc.getLongitude() + (widthPoly / GpsConstants.DIVIDER);
+        lngPoly[1] = currentLoc.getLongitude() + (widthPoly / GpsConstants.DIVIDER);
+        lngPoly[2] = currentLoc.getLongitude() - (widthPoly / GpsConstants.DIVIDER);
+        lngPoly[3] = currentLoc.getLongitude() - (widthPoly / GpsConstants.DIVIDER);
+
+
+        if ((latPoly[0] < pathPointLoc.getLatitude()) && (pathPointLoc.getLatitude() < latPoly[1])) {
+            isInsideLat = true;
+
+            if ((lngPoly[2] < pathPointLoc.getLongitude()) && (pathPointLoc.getLongitude() < lngPoly[1])) {
+                isInsideLng = true;
+            } else {
+                isInsideLng = false;
+            }
+        } else {
+            isInsideLat = false;
+        }
+
+        return isInsideLat && isInsideLng;
+    }
+
+    public static boolean isSameDirection(Location pathPointLoc, Double direction, Location currentLoc) {
+
+        boolean temIsSameDirection = false;
+
+        Double tempDirection = 0.0;
+        tempDirection = directionBetweenPoints(pathPointLoc, currentLoc);
+
+        Double tempDeltaPosi = direction + GpsConstants.DELTA_DIRECTION;
+        Double tempDeltaNega = direction - GpsConstants.DELTA_DIRECTION;
+
+        if ((tempDeltaNega < tempDirection) && (tempDirection < tempDeltaPosi)) {
+
+            temIsSameDirection = true;
+        }
+
+        return temIsSameDirection;
+    }
+
+    /**
      * Metodo para calcular la distancia hacia un Geofence
+     *
      * @param tempGeofence
      * @param position
      * @return
      */
-    public static Double distanceToGeofence(Point[] tempGeofence, Point position){
+    public static Double distanceToGeofence(Point[] tempGeofence, Point position) {
 
         Double[] tempDistance = new Double[tempGeofence.length];
         int[] tempPositionDistance = new int[tempGeofence.length];
@@ -578,14 +633,14 @@ public class Helper
 
         Double tempDistanceToGeofence = 0.0;
 
-        if((tempGeofence == null)&&(position == null)){
+        if ((tempGeofence == null) && (position == null)) {
 
             Log.e("distanceToGeofence", "0.0");
             return 0.0;
         }
 
         //Calculamos las distancias hacia cada punto del geofence
-        for(int i = 0; i < tempGeofence.length; i++){
+        for (int i = 0; i < tempGeofence.length; i++) {
 
             tempLoc1.setLatitude(tempGeofence[i].latitude);
             tempLoc1.setLongitude(tempGeofence[i].longitude);
@@ -601,9 +656,9 @@ public class Helper
         Double tempChangeDistance = 0.0;
 
         // Realizamos el ordenamineto de las distancias
-        for(int i = 0; i < tempDistance.length - 1; i++){
-            for(int j = i +1; j < tempDistance.length; j++){
-                if(tempDistance[i] > tempDistance[j]){
+        for (int i = 0; i < tempDistance.length - 1; i++) {
+            for (int j = i + 1; j < tempDistance.length; j++) {
+                if (tempDistance[i] > tempDistance[j]) {
 
                     tempChangeDistance = tempDistance[i];
                     tempDistance[i] = tempDistance[j];
@@ -628,22 +683,260 @@ public class Helper
 
         Double tempBaseLength = distance(tempLoc1, tempLoc2); // Distancia en Metros
         //Double tempBaseLengthCoord = tempBaseLength * 0.000008998719243599958;
-        Double tempBaseLengthCoord = tempBaseLength *   0.00000899321012635446; //111195 m.
+        Double tempBaseLengthCoord = tempBaseLength * 0.00000899321012635446; //111195 m.
 
 
         tempPointTriangule[0] = tempGeofence[tempPositionDistance[0]];
         tempPointTriangule[1] = tempGeofence[tempPositionDistance[1]];
-        tempPointTriangule[2]= position;
+        tempPointTriangule[2] = position;
 
         Double tempAreaTriangule = AreaPolygon(tempPointTriangule);
 
-        if(tempBaseLength != 0.0){
-            tempDistanceToGeofence = tempAreaTriangule/tempBaseLengthCoord;
+        if (tempBaseLength != 0.0) {
+            tempDistanceToGeofence = tempAreaTriangule / tempBaseLengthCoord;
         }
 
         Log.e("distanceToGeofence", String.valueOf(ConvCoordToMetros(tempDistanceToGeofence)));
         return ConvCoordToMetros(tempDistanceToGeofence);
 
+    }
+
+    /**
+     * Metodo para actualizar las direccion de un punto hacia otro
+     *
+     * @param beRouteLocation
+     * @return
+     */
+    public static BERouteLocation[] GetDirectionBetweenPoints(BERouteLocation[] beRouteLocation) {
+
+        Double tempLat1 = 0.0;
+        Double tempLng1 = 0.0;
+        Double tempLat2 = 0.0;
+        Double tempLng2 = 0.0;
+
+        Double tempDirection = 0.0;
+
+        for (int l = 0; l < beRouteLocation.length - 1; l++) {
+
+            tempLat1 = Double.valueOf(beRouteLocation[l].getLatitude());
+            tempLng1 = Double.valueOf(beRouteLocation[l].getLongitude());
+
+            tempLat2 = Double.valueOf(beRouteLocation[l + 1].getLatitude());
+            tempLng2 = Double.valueOf(beRouteLocation[l + 1].getLongitude());
+
+            Location tempLoc1 = new Location(LocationManager.GPS_PROVIDER);
+            Location tempLoc2 = new Location(LocationManager.GPS_PROVIDER);
+
+            tempLoc1.setLatitude(tempLat1);
+            tempLoc1.setLongitude(tempLng1);
+            tempLoc2.setLatitude(tempLat2);
+            tempLoc2.setLongitude(tempLng2);
+
+            tempDirection = directionBetweenPoints(tempLoc1, tempLoc2);
+
+            beRouteLocation[l].setDirectionNextPoint(tempDirection);
+        }
+
+        return beRouteLocation;
+    }
+
+    /**
+     * Metodo para conseguir los parametros de cada punto de la ruta
+     *
+     * @param beRouteLocation
+     * @return
+     */
+    public static BERouteLocation[] GetParamBetweenPoints(BERouteLocation[] beRouteLocation) {
+
+        BERouteLocation[] tempBeRouteLocation = beRouteLocation;
+        Location locationOrigin = new Location(LocationManager.GPS_PROVIDER);
+        Location locationDestination = new Location(LocationManager.GPS_PROVIDER);
+
+        // Calculando la distancia entre puntos
+
+        for (int i = 0; i < beRouteLocation.length - 1; i++) {
+
+            locationOrigin.setLatitude(Double.valueOf(beRouteLocation[i].getLatitude()));
+            locationOrigin.setLongitude(Double.valueOf(beRouteLocation[i].getLongitude()));
+
+            locationDestination.setLatitude(Double.valueOf(beRouteLocation[i + 1].getLatitude()));
+            locationDestination.setLongitude(Double.valueOf(beRouteLocation[i + 1].getLongitude()));
+
+            beRouteLocation[i].setDistanceNextPoint(Helper.distance(locationOrigin, locationDestination));
+        }
+
+        // Agrupando de acuerdo a la longitud de separación de cada punto
+        for (int k = 0; k < beRouteLocation.length - 1; k++) {
+
+            if (beRouteLocation[k].getDistanceNextPoint() > GpsConstants.SHORT_DISTANCE) {
+                beRouteLocation[k].setGroupType(BERouteLocation.LONG_GROUP);
+            } else {
+                beRouteLocation[k].setGroupType(BERouteLocation.SHORT_GROUP);
+            }
+        }
+
+        // Calculando la direccion entre puntos (en radianes)
+        // Consideramos el destino como punto para analizar respecto al origen
+        beRouteLocation = Helper.GetDirectionBetweenPoints(beRouteLocation);
+
+
+        // Calculo de los grupos para la consulta del tracking
+        int tempResLengthRoute = 0;
+        int tempLengthRoute = 0;
+        int tempGroupNumber = 0;
+        int tempGroupNumberLabel = 0;
+
+        tempLengthRoute = tempBeRouteLocation.length;
+
+        if (tempLengthRoute > GpsConstants.WAYPOINTS_GROUP) {
+
+            tempResLengthRoute = tempLengthRoute % GpsConstants.WAYPOINTS_GROUP;
+            tempGroupNumber = (tempLengthRoute - tempResLengthRoute) / GpsConstants.WAYPOINTS_GROUP;
+
+            if (tempResLengthRoute > 0) {
+                tempGroupNumber++;
+            }
+        } else {
+            tempGroupNumber++;
+        }
+
+        for (int m = 0; m < tempBeRouteLocation.length; m++) {
+
+            if (m < GpsConstants.WAYPOINTS_GROUP * (tempGroupNumberLabel + 1)) {
+                tempBeRouteLocation[m].setGroupNumber(tempGroupNumberLabel);
+            } else {
+                tempGroupNumberLabel++;
+                tempBeRouteLocation[m].setGroupNumber(tempGroupNumberLabel);
+            }
+
+            // Completamos el estado de cada punto s NORMAL
+            tempBeRouteLocation[m].setStatus(GpsConstants.STATUS_ROUTE_LOCATION_NORMAL);
+        }
+
+        tempBeRouteLocation[tempBeRouteLocation.length - 1].setStatus(GpsConstants.STATUS_ROUTE_LOCATION_NORMAL);
+
+        return tempBeRouteLocation;
+    }
+
+
+    /**
+     * Metodo principal que contiene el algoritmo de verificación de ruta (Tracking)
+     *
+     * @param beRouteLocations
+     * @param waypointsGroup
+     * @param currentLoc
+     * @return
+     */
+    public static boolean isNearPathMichelin(BERouteLocation[] beRouteLocations, int waypointsGroup, Location currentLoc) {
+
+        BERouteLocation[] tempBeRouteLocations1 = beRouteLocations;
+        int quantGroups = 0;
+        Location tempWaypointLoc = new Location(LocationManager.GPS_PROVIDER);
+        Location tempWaypointLocNext = new Location(LocationManager.GPS_PROVIDER);
+        Double tempDistanciaWaypointCurrLoc = 0.0;
+        Double tempDistanciaWaypointCurrLocNext = 0.0;
+        Double tempDirectionBetweenPoint = 0.0;
+        Double tempDistanciaWaypointCurrLocGrados = 0.0;
+        boolean tempIsNearCurrPos = false;
+        boolean tempIsSameDirection = false;
+        boolean tempIsNearPathMichelin = false;
+
+        quantGroups = tempBeRouteLocations1[tempBeRouteLocations1.length - 1].getGroupNumber() + 1;
+
+        // Busqueda en todos los grupos
+        for (int i = 0; i < quantGroups; i++) {
+
+            //Busqueda dentro de cada group
+            for (int j = waypointsGroup * i; j < waypointsGroup * (i + 1); j++) {
+
+                if (j < tempBeRouteLocations1.length - 1) {
+
+                    // Solo tomamos los puntos cuyo estado sea NORMAL
+                    if (tempBeRouteLocations1[j].getStatus() == GpsConstants.STATUS_ROUTE_LOCATION_NORMAL) {
+
+                        tempWaypointLoc.setLatitude(Double.valueOf(tempBeRouteLocations1[j].getLatitude()));
+                        tempWaypointLoc.setLongitude(Double.valueOf(tempBeRouteLocations1[j].getLongitude()));
+
+                        /*if (j < tempBeRouteLocations1.length - 2) {
+                            tempWaypointLocNext.setLatitude(Double.valueOf(tempBeRouteLocations1[j + 1].getLatitude()));
+                            tempWaypointLocNext.setLongitude(Double.valueOf(tempBeRouteLocations1[j + 1].getLongitude()));
+                        } else {
+                            tempWaypointLocNext.setLatitude(Double.valueOf(tempBeRouteLocations1[j].getLatitude()));
+                            tempWaypointLocNext.setLongitude(Double.valueOf(tempBeRouteLocations1[j].getLongitude()));
+                        }*/
+
+                        // Calculamos la distancia entre el punto de la ruta y la posicion actual
+                        tempDistanciaWaypointCurrLoc = distance(tempWaypointLoc, currentLoc);
+                        // Calculamos la distancia del siguiente punto de la ruta y la posicion actual
+                        //tempDistanciaWaypointCurrLocNext = distance(tempWaypointLocNext, currentLoc);
+
+                        if (tempDistanciaWaypointCurrLoc <= tempBeRouteLocations1[j].getDistanceNextPoint()) {
+                            // Calculamos la direccion del punto actual con la direcion de dos puntos consecutivos
+                            tempIsSameDirection = isSameDirection(tempWaypointLoc, tempBeRouteLocations1[j].getDirectionNextPoint(), currentLoc);
+
+                            if (tempIsSameDirection) {
+
+                                // Calculamos las dimensiones del geofence de la posición actual(Distancia en grados)
+                                tempDistanciaWaypointCurrLocGrados = tempDistanciaWaypointCurrLoc / GpsConstants.IN_GRADOS_PARAM;
+
+                                // Calculamos la cercanía del geofence actual con una posición en el camino
+                                tempIsNearCurrPos = isNearCurrentPosition(tempWaypointLoc, tempDistanciaWaypointCurrLocGrados, currentLoc);
+
+                                if (tempIsNearCurrPos) {
+                                    tempIsNearPathMichelin = true;
+                                }
+
+                                ////////////////////////////////// Actualizacion de estado ///////////////////////////////////////////
+                                if (tempIsNearPathMichelin) {
+                                    //Cambiamos el estado de la posicion que fue recorrida por el Driver
+                                    tempBeRouteLocations1[j].setStatus(GpsConstants.STATUS_ROUTE_LOCATION_OK);
+
+                                    // Cambiamos los estados anteriores a la ruta recorrida, con un valor REFUSED en caso no hyan sido seteados a OK
+                                    for (int k = j - 1; 0 <= k; k--) {
+                                        if (tempBeRouteLocations1[k].getStatus() == GpsConstants.STATUS_ROUTE_LOCATION_NORMAL) {
+                                            tempBeRouteLocations1[k].setStatus(GpsConstants.STATUS_ROUTE_LOCATION_REFUSED);
+                                        } else {
+                                            break;
+                                        }
+                                    }
+                                }
+
+
+                            }
+                        }
+
+
+
+                        /*
+
+
+
+
+
+
+
+
+                        if (tempBeRouteLocations1[j].getGroupType().equals(BERouteLocation.SHORT_GROUP)) {
+                            ////////////////////////////////// Metodo para posiciones cercanas ///////////////////////////////////////////
+                            if (tempIsNearCurrPos || tempIsSameDirection && (tempDistanciaWaypointCurrLoc <= tempBeRouteLocations1[j].getDistanceNextPoint())) {
+                                tempIsNearPathMichelin = true;
+                            }
+                        } else {
+                            ////////////////////////////////// Metodo para posiciones Lejanas ///////////////////////////////////////////
+                            if (tempIsSameDirection && (tempDistanciaWaypointCurrLoc <= tempBeRouteLocations1[j].getDistanceNextPoint())) {
+                                tempIsNearPathMichelin = true;
+                            }
+                        }*/
+
+
+                    }
+                }
+
+            }
+
+        }
+
+        return tempIsNearPathMichelin;
     }
 
 }
