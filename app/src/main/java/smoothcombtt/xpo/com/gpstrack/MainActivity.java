@@ -330,7 +330,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     BERouteLocation[] beRouteLocations;
-    ArrayList<LatLng> testLatLng;
+    BERouteLocation[] beRouteLocationsTemp;
+    //ArrayList<LatLng> testLatLng;
 
     @Override
     public void onClick(View view) {
@@ -378,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //ShowNewRuta();
 
 
-                final ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
+                final ArrayList<LatLng> latLngs2 = new ArrayList<LatLng>();
                 /*latLngs.add(new LatLng(-12.121029, -77.036852));
                 latLngs.add(new LatLng(-12.120748, -77.037030));
                 latLngs.add(new LatLng(-12.120249, -77.036852));
@@ -389,43 +390,46 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 latLngs.add(new LatLng(-12.112677, -77.029885));*/
 
                 //latLngs.add(new LatLng(-12.130114, -77.023742)); // Reducto
-                latLngs.add(new LatLng(-12.127901, -77.027027));
-                latLngs.add(new LatLng(-12.125859, -77.033428));
-                latLngs.add(new LatLng(-12.126498, -77.035908));
-                latLngs.add(new LatLng(-12.120336, -77.035800));
+                latLngs2.add(new LatLng(-12.127901, -77.027027));
+                latLngs2.add(new LatLng(-12.125859, -77.033428));
+                latLngs2.add(new LatLng(-12.126498, -77.035908));
+                latLngs2.add(new LatLng(-12.120336, -77.035800));
                 //latLngs.add(new LatLng(-12.120860, -77.037126));
                 //latLngs.add(new LatLng(-12.120642, -77.036954));
-                latLngs.add(new LatLng(-12.024450, -77.048311));
+                latLngs2.add(new LatLng(-12.024450, -77.048311));
 
 
 
 
-                DrawRouteWithList(latLngs);
+                DrawRouteWithList(latLngs2);
                 setInterfacePointsList(new InterfacePointsList() {
                     @Override
                     public void getPointsList(List<LatLng> latLngs) {
 
                         if ((latLngs != null) && (latLngs.size() > 0)) {
 
-                            beRouteLocations = new BERouteLocation[tempPoints.size()];
+                            beRouteLocationsTemp = new BERouteLocation[latLngs.size()];
+
                             BERouteLocation beRouteLocation;
-                            testLatLng = new ArrayList<LatLng>();
+                            //testLatLng = new ArrayList<LatLng>();
 
                             for (int j = 0; j < latLngs.size(); j++) {
-                                testLatLng.add(new LatLng(latLngs.get(j).latitude, latLngs.get(j).longitude));
-
-                                mapFragment.googleMap.addMarker(new MarkerOptions()
-                                        .position(latLngs.get(j))
-                                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_sweet_marker)));
+                                //testLatLng.add(new LatLng(latLngs.get(j).latitude, latLngs.get(j).longitude));
 
                                 beRouteLocation = new BERouteLocation();
-                                beRouteLocation.setLatitude(String.valueOf(tempPoints.get(j).latitude));
-                                beRouteLocation.setLongitude(String.valueOf(tempPoints.get(j).longitude));
-                                beRouteLocations[j] = beRouteLocation;
+                                beRouteLocation.setLatitude(String.valueOf(latLngs.get(j).latitude));
+                                beRouteLocation.setLongitude(String.valueOf(latLngs.get(j).longitude));
+                                beRouteLocationsTemp[j] = beRouteLocation;
                             }
-
                             // Realizando los cálculos necesarios para la ruta
-                            beRouteLocations = Helper.GetParamBetweenPoints(beRouteLocations);
+                            beRouteLocations = Helper.GetParamBetweenPoints(beRouteLocationsTemp);
+
+
+                            for(int k = 0; k < beRouteLocations.length; k++){
+                                mapFragment.googleMap.addMarker(new MarkerOptions()
+                                        .position(new LatLng(Double.valueOf(beRouteLocations[k].getLatitude()), Double.valueOf(beRouteLocations[k].getLongitude())))
+                                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_sweet_marker)));
+                            }
 
                         }
                     }
@@ -542,7 +546,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
                     // Comprobamos si esta cerca de un punto de la ruta
-                    outPath = Helper.isNearPath(testLatLng, location);
+                    //outPath = Helper.isNearPath(testLatLng, location);
 
                     if(beRouteLocations != null){
                         outPathNew = Helper.isNearPathMichelin(beRouteLocations, GpsConstants.WAYPOINTS_GROUP, location);
@@ -572,11 +576,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker);
                     }*/
 
-                    Double tempDistanceGeo = Helper.distanceToGeofence(Helper.toPointArray(geofence1), Helper.toPoint(coordinates));
+                    /*Double tempDistanceGeo = Helper.distanceToGeofence(Helper.toPointArray(geofence1), Helper.toPoint(coordinates));
                     act_main_distance_1.setText(String.valueOf(tempDistanceGeo));
 
                     tempDistanceGeo = Helper.distanceToGeofence(Helper.toPointArray(geofence2), Helper.toPoint(coordinates));
-                    act_main_distance_2.setText(String.valueOf(tempDistanceGeo));
+                    act_main_distance_2.setText(String.valueOf(tempDistanceGeo));*/
 
                     break;
 
@@ -608,7 +612,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
             }
 
-            Log.e("BROADCAST _CONTENT", "RECEIVED");
+            //Log.e("BROADCAST _CONTENT", "RECEIVED");
         }
     }
 

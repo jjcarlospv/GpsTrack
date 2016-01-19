@@ -37,16 +37,22 @@ public class GpsConstants {
     public final static Double SHORT_DISTANCE = 40.0;
     public final static Double MEDIUM_DISTANCE = 90.0;
 
-    public final static Double DELTA_DIRECTION = 20.0;//0.34907; // 20° en radianes
+    // Distancia hacia cada parte de ruta(m)
+    public final static Double ROAD_DISTANCE = 5.0;
+
+    //public final static Double DELTA_DIRECTION = 20.0;//0.34907; // 20° en radianes
+    public final static Double DELTA_DIRECTION = 50.0;//0.8728; // 50° en radianes
+
     public final static int WAYPOINTS_GROUP = 100;
 
     public final static Double PI_VALUE = 3.1416;
     public final static Double ROUND_NUMBER = 10000.0;
     public final static Double IN_GRADOS_PARAM = 111195.0;
-    public final static Double DIVIDER = 1.0;
+    public final static Double DIVIDER = 2.0;
 
     public final static int STATUS_ROUTE_LOCATION_NORMAL = 0;
-    public final static int STATUS_ROUTE_LOCATION_OK = 1;
-    public final static int STATUS_ROUTE_LOCATION_REFUSED = 2;
+    public final static int STATUS_ROUTE_LOCATION_IN_PROCESS = 1;
+    public final static int STATUS_ROUTE_LOCATION_NAVIGATED = 2;
+    public final static int STATUS_ROUTE_LOCATION_REFUSED = 3;
 
 }
