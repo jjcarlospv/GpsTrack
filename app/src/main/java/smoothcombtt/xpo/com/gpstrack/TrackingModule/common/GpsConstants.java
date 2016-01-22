@@ -38,7 +38,7 @@ public class GpsConstants {
     public final static Double MEDIUM_DISTANCE = 90.0;
 
     // Distancia hacia cada parte de ruta(m)
-    public final static Double ROAD_DISTANCE = 5.0;
+    public final static Double ROAD_DISTANCE = 4.0;
 
     //public final static Double DELTA_DIRECTION = 20.0;//0.34907; // 20° en radianes
     public final static Double DELTA_DIRECTION = 50.0;//0.8728; // 50° en radianes
@@ -55,4 +55,13 @@ public class GpsConstants {
     public final static int STATUS_ROUTE_LOCATION_NAVIGATED = 2;
     public final static int STATUS_ROUTE_LOCATION_REFUSED = 3;
 
+    // Estados para la posicion actual del driver
+
+    public final static int STATUS_DRIVER_FAR_ROUTE = 0; // Alejado de la ruta
+    public final static int STATUS_DRIVER_NEAR_WAYPOINT = 1; // Cerca de un waypoint - filtro 1
+    public final static int STATUS_DRIVER_SAME_DIRECTION = 2; // En la misma direccion del waypoint - filtro 2
+    public final static int STATUS_DRIVER_ON_SECTION = 3; // En la ruta - filtro 1
+    public final static int STATUS_DRIVER_ON_ROAD = 4; // Cerca un waypoint con la misma direction
+    // de la porcion de ruta pero alejado de la secióm de ruta.
+    public final static int STATUS_DRIVER_GO_BACK = 5;
 }

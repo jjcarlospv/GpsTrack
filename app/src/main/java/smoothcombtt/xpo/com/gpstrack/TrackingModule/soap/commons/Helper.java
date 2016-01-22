@@ -20,6 +20,9 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Vector;
 
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.bean.BECurrentLocation;
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.bean.BEResponseRoute;
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.bean.BERouteDetails;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.bean.BERouteLocation;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.GpsConstants;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.Point;
@@ -459,7 +462,7 @@ public class Helper {
 
         for (int j = 1; j < tempPoints.length; j++) {
 
-            tempd = tempd + tempPoints[j].latitude * tempPoints[j-1].longitude;
+            tempd = tempd + tempPoints[j].latitude * tempPoints[j - 1].longitude;
         }
         return Math.abs(tempD - tempd) * 0.5;
     }
@@ -707,7 +710,7 @@ public class Helper {
      * @param beRouteLocation
      * @return
      */
-    public static BERouteLocation[] GetDirectionBetweenPoints(BERouteLocation[] beRouteLocation) {
+    public static BERouteDetails[] GetDirectionBetweenPoints(BERouteDetails[] beRouteDetails) {
 
         Double tempLat1 = 0.0;
         Double tempLng1 = 0.0;
@@ -716,13 +719,13 @@ public class Helper {
 
         Double tempDirection = 0.0;
 
-        for (int l = 0; l < beRouteLocation.length - 1; l++) {
+        for (int l = 0; l < beRouteDetails.length - 1; l++) {
 
-            tempLat1 = Double.valueOf(beRouteLocation[l].getLatitude());
-            tempLng1 = Double.valueOf(beRouteLocation[l].getLongitude());
+            tempLat1 = Double.valueOf(beRouteDetails[l].getLatitude());
+            tempLng1 = Double.valueOf(beRouteDetails[l].getLongitude());
 
-            tempLat2 = Double.valueOf(beRouteLocation[l + 1].getLatitude());
-            tempLng2 = Double.valueOf(beRouteLocation[l + 1].getLongitude());
+            tempLat2 = Double.valueOf(beRouteDetails[l + 1].getLatitude());
+            tempLng2 = Double.valueOf(beRouteDetails[l + 1].getLongitude());
 
             Location tempLoc1 = new Location(LocationManager.GPS_PROVIDER);
             Location tempLoc2 = new Location(LocationManager.GPS_PROVIDER);
@@ -734,10 +737,10 @@ public class Helper {
 
             tempDirection = directionBetweenPoints(tempLoc1, tempLoc2);
 
-            beRouteLocation[l].setDirectionNextPoint(tempDirection);
+            beRouteDetails[l].setDirectionNextPoint(tempDirection);
         }
 
-        return beRouteLocation;
+        return beRouteDetails;
     }
 
     /**
@@ -746,71 +749,90 @@ public class Helper {
      * @param beRouteLocation
      * @return
      */
-    public static BERouteLocation[] GetParamBetweenPoints(BERouteLocation[] beRouteLocation) {
+    public static BERouteDetails[] GetParamBetweenPoints(BERouteDetails[] beRouteDetails) {
 
 
-        ArrayList<BERouteLocation> beRouteLocations = new ArrayList<BERouteLocation>();
+        ArrayList<BERouteDetails> beRouteDetailses = new ArrayList<BERouteDetails>();
         Location locationOrigin = new Location(LocationManager.GPS_PROVIDER);
         Location locationDestination = new Location(LocationManager.GPS_PROVIDER);
+        boolean isEqualPoint1 = false;
+        boolean isEqualPoint2 = false;
 
         // Retirando los puntos iguales que vienen en la lista
-        BERouteLocation tempBeRoute;
+        BERouteDetails tempBeRoute;
 
         int indexList = 0;
 
-        tempBeRoute = new BERouteLocation();
-        tempBeRoute.setLatitude(beRouteLocation[0].getLatitude());
-        tempBeRoute.setLongitude(beRouteLocation[0].getLongitude());
-        beRouteLocations.add(tempBeRoute);
+        tempBeRoute = new BERouteDetails();
+        tempBeRoute.setRoutePointId(beRouteDetails[0].getRoutePointId());
+        tempBeRoute.setLatitude(beRouteDetails[0].getLatitude());
+        tempBeRoute.setLongitude(beRouteDetails[0].getLongitude());
+        tempBeRoute.setOrder(beRouteDetails[0].getOrder());
+        tempBeRoute.setIsWaypoint(beRouteDetails[0].getIsWaypoint());
+        tempBeRoute.setRouteId(beRouteDetails[0].getRouteId());
+        beRouteDetailses.add(tempBeRoute);
         indexList++;
 
-        for(int k = 1; k < beRouteLocation.length; k++ ){
+        for (int k = 1; k < beRouteDetails.length; k++) {
 
-            if(( !beRouteLocations.get(indexList - 1).getLatitude().equals(beRouteLocation[k].getLatitude()) )&&( !beRouteLocations.get(indexList - 1).getLongitude().equals(beRouteLocation[k].getLongitude()) )){
-                tempBeRoute = new BERouteLocation();
-                tempBeRoute.setLatitude(beRouteLocation[k].getLatitude());
-                tempBeRoute.setLongitude(beRouteLocation[k].getLongitude());
-                beRouteLocations.add(tempBeRoute);
+            isEqualPoint1 = !beRouteDetailses.get(indexList - 1).getLatitude().equals(beRouteDetails[k].getLatitude());
+            isEqualPoint2 = !beRouteDetailses.get(indexList - 1).getLongitude().equals(beRouteDetails[k].getLongitude());
+
+            if (isEqualPoint1 || isEqualPoint2) {
+
+                tempBeRoute = new BERouteDetails();
+                tempBeRoute.setRoutePointId(beRouteDetails[k].getRoutePointId());
+                tempBeRoute.setLatitude(beRouteDetails[k].getLatitude());
+                tempBeRoute.setLongitude(beRouteDetails[k].getLongitude());
+                tempBeRoute.setOrder(beRouteDetails[k].getOrder());
+                tempBeRoute.setIsWaypoint(beRouteDetails[k].getIsWaypoint());
+                tempBeRoute.setRouteId(beRouteDetails[k].getRouteId());
+                beRouteDetailses.add(tempBeRoute);
                 indexList++;
             }
         }
 
-        BERouteLocation[] tempBeRouteLocationReduction = new BERouteLocation[beRouteLocations.size()];
+        BERouteDetails[] tempBeRouteDetailsReduction = new BERouteDetails[beRouteDetailses.size()];
 
-        for(int l = 0; l < beRouteLocations.size(); l++){
-            tempBeRoute = new BERouteLocation();
-            tempBeRoute.setLatitude(beRouteLocations.get(l).getLatitude());
-            tempBeRoute.setLongitude(beRouteLocations.get(l).getLongitude());
-            tempBeRouteLocationReduction[l] = tempBeRoute;
+        for (int l = 0; l < beRouteDetailses.size(); l++) {
+            tempBeRoute = new BERouteDetails();
+            tempBeRoute.setRoutePointId(beRouteDetailses.get(l).getRoutePointId());
+            tempBeRoute.setLatitude(beRouteDetailses.get(l).getLatitude());
+            tempBeRoute.setLongitude(beRouteDetailses.get(l).getLongitude());
+            tempBeRoute.setOrder(beRouteDetailses.get(l).getOrder());
+            tempBeRoute.setIsWaypoint(beRouteDetailses.get(l).getIsWaypoint());
+            tempBeRoute.setRouteId(beRouteDetailses.get(l).getRouteId());
+
+            tempBeRouteDetailsReduction[l] = tempBeRoute;
         }
 
-        BERouteLocation[] tempBeRouteLocation = tempBeRouteLocationReduction;
+        BERouteDetails[] tempBeRouteDetails = tempBeRouteDetailsReduction;
         // Calculando la distancia entre puntos
 
-        for (int i = 0; i < tempBeRouteLocation.length - 1; i++) {
+        for (int i = 0; i < tempBeRouteDetails.length - 1; i++) {
 
-            locationOrigin.setLatitude(Double.valueOf(tempBeRouteLocation[i].getLatitude()));
-            locationOrigin.setLongitude(Double.valueOf(tempBeRouteLocation[i].getLongitude()));
+            locationOrigin.setLatitude(Double.valueOf(tempBeRouteDetails[i].getLatitude()));
+            locationOrigin.setLongitude(Double.valueOf(tempBeRouteDetails[i].getLongitude()));
 
-            locationDestination.setLatitude(Double.valueOf(tempBeRouteLocation[i + 1].getLatitude()));
-            locationDestination.setLongitude(Double.valueOf(tempBeRouteLocation[i + 1].getLongitude()));
+            locationDestination.setLatitude(Double.valueOf(tempBeRouteDetails[i + 1].getLatitude()));
+            locationDestination.setLongitude(Double.valueOf(tempBeRouteDetails[i + 1].getLongitude()));
 
-            tempBeRouteLocation[i].setDistanceNextPoint(Helper.distance(locationOrigin, locationDestination));
+            tempBeRouteDetails[i].setDistanceNextPoint(Helper.distance(locationOrigin, locationDestination));
         }
 
         // Agrupando de acuerdo a la longitud de separación de cada punto
-        for (int k = 0; k < tempBeRouteLocation.length - 1; k++) {
+        for (int k = 0; k < tempBeRouteDetails.length - 1; k++) {
 
-            if (tempBeRouteLocation[k].getDistanceNextPoint() > GpsConstants.SHORT_DISTANCE) {
-                tempBeRouteLocation[k].setGroupType(BERouteLocation.LONG_GROUP);
+            if (tempBeRouteDetails[k].getDistanceNextPoint() > GpsConstants.SHORT_DISTANCE) {
+                tempBeRouteDetails[k].setGroupType(BERouteDetails.LONG_GROUP);
             } else {
-                tempBeRouteLocation[k].setGroupType(BERouteLocation.SHORT_GROUP);
+                tempBeRouteDetails[k].setGroupType(BERouteDetails.SHORT_GROUP);
             }
         }
 
         // Calculando la direccion entre puntos (en radianes)
         // Consideramos el destino como punto para analizar respecto al origen
-        tempBeRouteLocation = Helper.GetDirectionBetweenPoints(tempBeRouteLocation);
+        tempBeRouteDetails = Helper.GetDirectionBetweenPoints(tempBeRouteDetails);
 
 
         // Calculo de los grupos para la consulta del tracking
@@ -819,7 +841,7 @@ public class Helper {
         int tempGroupNumber = 0;
         int tempGroupNumberLabel = 0;
 
-        tempLengthRoute = tempBeRouteLocation.length;
+        tempLengthRoute = tempBeRouteDetails.length;
 
         if (tempLengthRoute > GpsConstants.WAYPOINTS_GROUP) {
 
@@ -833,27 +855,28 @@ public class Helper {
             tempGroupNumber++;
         }
 
-        for (int m = 0; m < tempBeRouteLocation.length; m++) {
+        for (int m = 0; m < tempBeRouteDetails.length; m++) {
 
             if (m < GpsConstants.WAYPOINTS_GROUP * (tempGroupNumberLabel + 1)) {
-                tempBeRouteLocation[m].setGroupNumber(tempGroupNumberLabel);
+                tempBeRouteDetails[m].setGroupNumber(tempGroupNumberLabel);
             } else {
                 tempGroupNumberLabel++;
-                tempBeRouteLocation[m].setGroupNumber(tempGroupNumberLabel);
+                tempBeRouteDetails[m].setGroupNumber(tempGroupNumberLabel);
             }
 
             // Completamos el estado de cada punto s NORMAL
-            tempBeRouteLocation[m].setStatus(GpsConstants.STATUS_ROUTE_LOCATION_NORMAL);
+            tempBeRouteDetails[m].setStatus(GpsConstants.STATUS_ROUTE_LOCATION_NORMAL);
         }
 
-        tempBeRouteLocation[tempBeRouteLocation.length - 1].setStatus(GpsConstants.STATUS_ROUTE_LOCATION_NORMAL);
+        tempBeRouteDetails[tempBeRouteDetails.length - 1].setStatus(GpsConstants.STATUS_ROUTE_LOCATION_NORMAL);
 
-        return tempBeRouteLocation;
+        return tempBeRouteDetails;
     }
 
     /**
      * Metodo para calcular la distancia de un punto actual hacia una recta definida por dos puntos. Este metodo
      * utiliza el area de una region triangular para calcular la distancia
+     *
      * @param origin
      * @param destination
      * @param currentPos
@@ -894,6 +917,7 @@ public class Helper {
     }
 
     static String currentWaypoint = "-1"; ///////
+
     /**
      * Metodo principal que contiene el algoritmo de verificación de ruta (Tracking)
      *
@@ -902,9 +926,12 @@ public class Helper {
      * @param currentLoc
      * @return
      */
-    public static boolean isNearPathMichelin(BERouteLocation[] beRouteLocations, int waypointsGroup, Location currentLoc) {
+    public static BEResponseRoute isNearPathMichelin(BERouteDetails[] beRouteDetailses, int waypointsGroup, Location currentLoc) {
 
-        BERouteLocation[] tempBeRouteLocations1 = beRouteLocations;
+        BERouteDetails[] tempBeRouteLocations1 = beRouteDetailses;
+        BECurrentLocation beCurrentLocation = new BECurrentLocation();
+        BEResponseRoute beResponseRoute = new BEResponseRoute();
+
         int quantGroups = 0;
         Location tempWaypointLoc = new Location(LocationManager.GPS_PROVIDER);
         Location tempWaypointLocNext = new Location(LocationManager.GPS_PROVIDER);
@@ -916,6 +943,7 @@ public class Helper {
         boolean tempIsNearCurrPosNext = false;
         boolean tempIsSameDirection = false;
         boolean tempIsNearPathMichelin = false;
+        boolean tempGetReferenceWaypoint = false;
         Double tempDistanceToRoad = 0.0;
 
 
@@ -925,41 +953,50 @@ public class Helper {
         for (int i = 0; i < quantGroups; i++) {
 
             //If encontramos una referencia, terminamos el bucle
-            if(tempIsNearPathMichelin){break;}
+            if (tempGetReferenceWaypoint) {
+                break;
+            }
 
             //Busqueda dentro de cada group
             for (int j = waypointsGroup * i; j < waypointsGroup * (i + 1); j++) {
 
                 if (j < tempBeRouteLocations1.length - 1) {
 
-                    // Solo tomamos los puntos cuyo estado sea NORMAL
-                    if ((tempBeRouteLocations1[j].getStatus() == GpsConstants.STATUS_ROUTE_LOCATION_NORMAL) || (tempBeRouteLocations1[j].getStatus() == GpsConstants.STATUS_ROUTE_LOCATION_IN_PROCESS)) {
+                    tempWaypointLoc.setLatitude(Double.valueOf(tempBeRouteLocations1[j].getLatitude()));
+                    tempWaypointLoc.setLongitude(Double.valueOf(tempBeRouteLocations1[j].getLongitude()));
 
-                        tempWaypointLoc.setLatitude(Double.valueOf(tempBeRouteLocations1[j].getLatitude()));
-                        tempWaypointLoc.setLongitude(Double.valueOf(tempBeRouteLocations1[j].getLongitude()));
+                    beCurrentLocation.setLatitude(Double.valueOf(tempBeRouteLocations1[j].getLatitude()));
+                    beCurrentLocation.setLongitude(Double.valueOf(tempBeRouteLocations1[j].getLongitude()));
 
-                        // Calculamos la distancia entre el punto de la ruta y la posicion actual
-                        tempDistanciaWaypointCurrLoc = distance(tempWaypointLoc, currentLoc);
+                    // Calculamos la distancia entre el punto de la ruta y la posicion actual
+                    tempDistanciaWaypointCurrLoc = distance(tempWaypointLoc, currentLoc);
+                    beCurrentLocation.setDistance(tempDistanciaWaypointCurrLoc);
 
-                        if (tempDistanciaWaypointCurrLoc <= tempBeRouteLocations1[j].getDistanceNextPoint()) {
-                            // Calculamos la direccion del punto actual con la direcion de dos puntos consecutivos
-                            tempIsSameDirection = isSameDirection(tempWaypointLoc, tempBeRouteLocations1[j].getDirectionNextPoint(), currentLoc);
+                    if (tempDistanciaWaypointCurrLoc <= tempBeRouteLocations1[j].getDistanceNextPoint()) {
 
-                            if (tempIsSameDirection) {
+                        // Calculamos la direccion del punto actual con la direcion de dos puntos consecutivos
+                        tempIsSameDirection = isSameDirection(tempWaypointLoc, tempBeRouteLocations1[j].getDirectionNextPoint(), currentLoc);
+                        beCurrentLocation.setDireccion(Helper.directionBetweenPoints(tempWaypointLoc, currentLoc));
+
+                        if (tempIsSameDirection) {
+
+                            // Solo tomamos los puntos cuyo estado sea NORMAL
+                            if ((tempBeRouteLocations1[j].getStatus() == GpsConstants.STATUS_ROUTE_LOCATION_NORMAL)
+                                    || (tempBeRouteLocations1[j].getStatus() == GpsConstants.STATUS_ROUTE_LOCATION_IN_PROCESS)) {
 
                                 tempWaypointLocNext.setLatitude(Double.valueOf(tempBeRouteLocations1[j + 1].getLatitude()));
                                 tempWaypointLocNext.setLongitude(Double.valueOf(tempBeRouteLocations1[j + 1].getLongitude()));
 
                                 tempDistanceToRoad = distancePointToRoad(tempWaypointLoc, tempWaypointLocNext, currentLoc);
 
-                                if(tempDistanceToRoad <= GpsConstants.ROAD_DISTANCE){
+                                if (tempDistanceToRoad <= GpsConstants.ROAD_DISTANCE) {
 
                                     tempIsNearPathMichelin = true;
                                     tempBeRouteLocations1[j].setStatus(GpsConstants.STATUS_ROUTE_LOCATION_IN_PROCESS);
 
-                                    if(!currentWaypoint.equals("-1")){
+                                    if (!currentWaypoint.equals("-1")) {
 
-                                        if(!currentWaypoint.equals(String.valueOf(j))){
+                                        if (!currentWaypoint.equals(String.valueOf(j))) {
 
                                             // Cambiamos los estados anteriores a la ruta recorrida, con un valor REFUSED en caso no hyan sido seteados a OK
                                             for (int k = j - 1; 0 <= k; k--) {
@@ -973,43 +1010,53 @@ public class Helper {
                                                     }
                                                 }
                                             }
-                                        }
 
+                                            beResponseRoute.setBeRouteDetailses(tempBeRouteLocations1);
+                                        }
                                     }
 
                                     // Almacenamos la posicion del actualwaypoint
                                     currentWaypoint = String.valueOf(j);
+                                    beResponseRoute.setInProgressWaypoint(j);
+                                    beResponseRoute.setWaypointStatus(GpsConstants.STATUS_ROUTE_LOCATION_IN_PROCESS);
+                                    beCurrentLocation.setStatus(GpsConstants.STATUS_DRIVER_ON_ROAD);
                                     Log.e("WAYPOINT " + String.valueOf(j), "IN PROGRESS");
-/*
-                                    // Calculamos la distancia entre el punto de la ruta y la posicion actual
-                                    tempDistanciaWaypointCurrLoc = distance(tempWaypointLoc, currentLoc);
 
-                                    // Calculamos las dimensiones del geofence de la posición actual(Distancia en grados)
-                                    tempDistanciaWaypointCurrLocGrados = tempDistanciaWaypointCurrLoc / GpsConstants.IN_GRADOS_PARAM;
+                                } else {
+                                    beCurrentLocation.setStatus(GpsConstants.STATUS_DRIVER_ON_SECTION);
+                                    Log.e("WAYPOINT ON SECTION " + String.valueOf(j), "NORMAL");
+                                }
 
-                                    // Calculamos la cercanía del geofence actual con una posición en el camino
-                                    tempIsNearCurrPosNext = isNearCurrentPosition(tempWaypointLocNext, tempDistanciaWaypointCurrLocGrados, currentLoc);
-*/
+                                tempGetReferenceWaypoint = true;
+                                break;
 
+                            } else {
+                                if ((tempBeRouteLocations1[j].getStatus() == GpsConstants.STATUS_ROUTE_LOCATION_REFUSED) || (tempBeRouteLocations1[j].getStatus() == GpsConstants.STATUS_ROUTE_LOCATION_NAVIGATED)) {
+                                    beCurrentLocation.setStatus(GpsConstants.STATUS_DRIVER_GO_BACK);
+                                    tempGetReferenceWaypoint = true;
+                                    break;
                                 }
 
                             }
 
-                            break;
+
+                        } else {
+                            beCurrentLocation.setStatus(GpsConstants.STATUS_DRIVER_NEAR_WAYPOINT);
                         }
 
+                    } else {
+                        beCurrentLocation.setStatus(GpsConstants.STATUS_DRIVER_FAR_ROUTE);
+                        Log.e("WAYPOINT FAR" + String.valueOf(j), "");
                     }
 
-                    else{
-
-                    }
                 }
 
             }
 
         }
 
-        return tempIsNearPathMichelin;
+        beResponseRoute.setBeCurrentLocation(beCurrentLocation);
+        return beResponseRoute;
     }
 
 }

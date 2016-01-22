@@ -37,6 +37,7 @@ import com.google.android.gms.maps.model.Polyline;
 import java.util.ArrayList;
 import java.util.List;
 
+import smoothcombtt.xpo.com.gpstrack.TrackingModule.bean.BERouteDetails;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.bean.BERouteLocation;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.GpsConstants;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.common.Polygon;
@@ -46,7 +47,7 @@ import smoothcombtt.xpo.com.gpstrack.TrackingModule.fragment.MapFragment;
 import smoothcombtt.xpo.com.gpstrack.TrackingModule.soap.commons.Helper;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class TrackingMainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Button act_main_stop;
     private Button act_main_start;
@@ -73,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     boolean insideFence = false;
     boolean outPath = false;
-    boolean outPathNew = false;
+    int outPathNew = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -162,9 +163,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 switch (i) {
                     case 1:
-                        ShowMarkers();
+                        /*ShowMarkers();
                         ShowGeofence(geofence1, geofence2);
-                        ShowPath(arrayPathLoc);
+                        ShowPath(arrayPathLoc);*/
                         break;
                 }
             }
@@ -305,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onBackPressed() {
 
-        final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(TrackingMainActivity.this);
 
         //builder.setTitle(getResources().getString(R.string.push_title));
         builder.setMessage(getResources().getString(R.string.backpressed_message));
@@ -313,7 +314,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         builder.setPositiveButton(getResources().getString(R.string.btn_acept), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                stopService(new Intent(MainActivity.this, TrackingService.class));
+                stopService(new Intent(TrackingMainActivity.this, TrackingService.class));
                 finish();
             }
         });
@@ -329,8 +330,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    BERouteLocation[] beRouteLocations;
-    BERouteLocation[] beRouteLocationsTemp;
+    BERouteDetails[] beRouteDetailses;
+    BERouteDetails[] beRouteDetailsesTemp;
+
     //ArrayList<LatLng> testLatLng;
 
     @Override
@@ -339,14 +341,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()) {
 
             case R.id.act_main_start:
-                //startService(new Intent(MainActivity.this, TrackingService.class));
+                //startSe3rvice(new Intent(Main3Activity.this, TrackingService.class));
 
                 final LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
                 if ((locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))) {
-                    startService(new Intent(MainActivity.this, TrackingService.class));
+                    startService(new Intent(TrackingMainActivity.this, TrackingService.class));
                 } else {
-                    AlertDialog.Builder b = new AlertDialog.Builder(MainActivity.this);
+                    AlertDialog.Builder b = new AlertDialog.Builder(TrackingMainActivity.this);
                     final AlertDialog create = b.create();
                     create.setTitle(getResources().getString(R.string.GPS_error_title));
                     create.setCancelable(true);
@@ -365,14 +367,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.act_main_stop:
 
-                stopService(new Intent(MainActivity.this, TrackingService.class));
+                stopService(new Intent(TrackingMainActivity.this, TrackingService.class));
 
                 break;
 
             case R.id.act_main_show_markers:
                 ShowMarkers();
-                ShowGeofence(geofence1, geofence2);
-                ShowPath(arrayPathLoc);
+                /*ShowGeofence(geofence1, geofence2);
+                ShowPath(arrayPathLoc);*/
+
+                if((beRouteDetailses != null) && (beRouteDetailses.length > 1)){
+                    for (int k = 0; k < beRouteDetailses.length; k++) {
+                        mapFragment.googleMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(Double.valueOf(beRouteDetailses[k].getLatitude()), Double.valueOf(beRouteDetailses[k].getLongitude())))
+                                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_sweet_marker)));
+                    }
+                }
+
+
                 break;
 
             case R.id.act_main_new_ruta:
@@ -390,16 +402,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 latLngs.add(new LatLng(-12.112677, -77.029885));*/
 
                 //latLngs.add(new LatLng(-12.130114, -77.023742)); // Reducto
-                latLngs2.add(new LatLng(-12.127901, -77.027027));
+    /*            latLngs2.add(new LatLng(-12.127901, -77.027027));
                 latLngs2.add(new LatLng(-12.125859, -77.033428));
                 latLngs2.add(new LatLng(-12.126498, -77.035908));
                 latLngs2.add(new LatLng(-12.120336, -77.035800));
                 //latLngs.add(new LatLng(-12.120860, -77.037126));
                 //latLngs.add(new LatLng(-12.120642, -77.036954));
-                latLngs2.add(new LatLng(-12.024450, -77.048311));
+                //latLngs2.add(new LatLng(-12.024450, -77.048311));//UNI
+                latLngs2.add(new LatLng(-11.730212, -76.968276));// el olivar - Norte
+*/
+/*
+                latLngs2.add(new LatLng(-12.070080, -77.044033)); // Lloque
+                latLngs2.add(new LatLng(-12.072635, -77.045957));
+                latLngs2.add(new LatLng(-12.077053, -77.046064));
+                latLngs2.add(new LatLng(-12.078025, -77.052495)); //////
+                latLngs2.add(new LatLng(-12.078728, -77.056935));
+                latLngs2.add(new LatLng(-12.080509, -77.058375));
+                latLngs2.add(new LatLng(-12.077809, -77.062899));
+                latLngs2.add(new LatLng(-12.076699, -77.062561)); // San Martin
+*/
 
-
-
+                latLngs2.add(new LatLng(-12.121205, -77.037122));
+                latLngs2.add(new LatLng(-12.123895, -77.032292));
+                latLngs2.add(new LatLng(-12.126242, -77.030742));
+                latLngs2.add(new LatLng(-12.162886, -77.023193));
+                latLngs2.add(new LatLng(-12.180998, -77.011935));
+                latLngs2.add(new LatLng(-12.176026, -77.003630));
 
                 DrawRouteWithList(latLngs2);
                 setInterfacePointsList(new InterfacePointsList() {
@@ -408,26 +436,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         if ((latLngs != null) && (latLngs.size() > 0)) {
 
-                            beRouteLocationsTemp = new BERouteLocation[latLngs.size()];
+                            beRouteDetailsesTemp = new BERouteDetails[latLngs.size()];
 
-                            BERouteLocation beRouteLocation;
+                            BERouteDetails beRouteDetails;
                             //testLatLng = new ArrayList<LatLng>();
 
                             for (int j = 0; j < latLngs.size(); j++) {
                                 //testLatLng.add(new LatLng(latLngs.get(j).latitude, latLngs.get(j).longitude));
 
-                                beRouteLocation = new BERouteLocation();
-                                beRouteLocation.setLatitude(String.valueOf(latLngs.get(j).latitude));
-                                beRouteLocation.setLongitude(String.valueOf(latLngs.get(j).longitude));
-                                beRouteLocationsTemp[j] = beRouteLocation;
+                                beRouteDetails = new BERouteDetails();
+                                beRouteDetails.setLatitude(String.valueOf(latLngs.get(j).latitude));
+                                beRouteDetails.setLongitude(String.valueOf(latLngs.get(j).longitude));
+                                beRouteDetails.setRouteId(15);
+                                beRouteDetails.setOrder(j);
+                                beRouteDetails.setIsWaypoint(false);
+                                beRouteDetails.setRoutePointId(j);
+                                beRouteDetails.setStatus(GpsConstants.STATUS_ROUTE_LOCATION_NORMAL);
+                                beRouteDetailsesTemp[j] = beRouteDetails;
                             }
                             // Realizando los cálculos necesarios para la ruta
-                            beRouteLocations = Helper.GetParamBetweenPoints(beRouteLocationsTemp);
+                            beRouteDetailses = Helper.GetParamBetweenPoints(beRouteDetailsesTemp);
 
 
-                            for(int k = 0; k < beRouteLocations.length; k++){
+                            for (int k = 0; k < beRouteDetailses.length; k++) {
                                 mapFragment.googleMap.addMarker(new MarkerOptions()
-                                        .position(new LatLng(Double.valueOf(beRouteLocations[k].getLatitude()), Double.valueOf(beRouteLocations[k].getLongitude())))
+                                        .position(new LatLng(Double.valueOf(beRouteDetailses[k].getLatitude()), Double.valueOf(beRouteDetailses[k].getLongitude())))
                                         .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_sweet_marker)));
                             }
 
@@ -548,15 +581,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     // Comprobamos si esta cerca de un punto de la ruta
                     //outPath = Helper.isNearPath(testLatLng, location);
 
-                    if(beRouteLocations != null){
-                        outPathNew = Helper.isNearPathMichelin(beRouteLocations, GpsConstants.WAYPOINTS_GROUP, location);
+                    if (beRouteDetailses != null) {
+                        outPathNew = Helper.isNearPathMichelin(beRouteDetailses, GpsConstants.WAYPOINTS_GROUP, location).getBeCurrentLocation().getStatus();
                     }
 
+                    switch (outPathNew) {
 
-                    if (outPathNew) {
-                        mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker);
-                    } else {
-                        mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_out_path);
+                        case GpsConstants.STATUS_DRIVER_FAR_ROUTE:
+                            mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_path);
+                            break;
+
+                        case GpsConstants.STATUS_DRIVER_NEAR_WAYPOINT:
+                            mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_geofence);
+                            break;
+
+                        case GpsConstants.STATUS_DRIVER_SAME_DIRECTION:
+
+                            break;
+
+                        case GpsConstants.STATUS_DRIVER_ON_SECTION:
+                            mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_out_path); //
+                            break;
+
+                        case GpsConstants.STATUS_DRIVER_ON_ROAD:
+                            mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker);///
+                            break;
+
+                        case GpsConstants.STATUS_DRIVER_GO_BACK:
+                            mapFragment.addMarkerWithImageSource(coordinates[0], coordinates[1], R.mipmap.ic_marker_geoposition); ///
+                            break;
                     }
 
 
@@ -586,7 +639,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 case GpsConstants.GPS_STOPPED:
 
-                    AlertDialog.Builder b = new AlertDialog.Builder(MainActivity.this);
+                    AlertDialog.Builder b = new AlertDialog.Builder(TrackingMainActivity.this);
                     final AlertDialog create = b.create();
                     create.setTitle(getResources().getString(R.string.GPS_error_title));
                     create.setCancelable(true);
@@ -650,7 +703,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         groups = (latLngs.size() - rest) / groupEl;
 
 
-        dialog = new ProgressDialog(MainActivity.this);
+        dialog = new ProgressDialog(TrackingMainActivity.this);
         dialog.setTitle("Por favor espere ...");
         dialog.setCancelable(false);
         dialog.show();
