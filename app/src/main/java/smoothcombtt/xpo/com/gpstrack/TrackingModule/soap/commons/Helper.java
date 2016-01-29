@@ -1011,7 +1011,6 @@ public class Helper {
                                                 }
                                             }
 
-                                            beResponseRoute.setBeRouteDetailses(tempBeRouteLocations1);
                                         }
                                     }
 
@@ -1055,6 +1054,7 @@ public class Helper {
 
         }
 
+        beResponseRoute.setBeRouteDetailses(tempBeRouteLocations1);
         beResponseRoute.setBeCurrentLocation(beCurrentLocation);
         return beResponseRoute;
     }
