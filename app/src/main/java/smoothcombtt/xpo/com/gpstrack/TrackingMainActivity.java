@@ -422,12 +422,23 @@ public class TrackingMainActivity extends AppCompatActivity implements View.OnCl
                 latLngs2.add(new LatLng(-12.076699, -77.062561)); // San Martin
 */
 
-                latLngs2.add(new LatLng(-12.121205, -77.037122));
+                /*latLngs2.add(new LatLng(-12.121205, -77.037122));
                 latLngs2.add(new LatLng(-12.123895, -77.032292));
                 latLngs2.add(new LatLng(-12.126242, -77.030742));
                 latLngs2.add(new LatLng(-12.162886, -77.023193));
                 latLngs2.add(new LatLng(-12.180998, -77.011935));
-                latLngs2.add(new LatLng(-12.176026, -77.003630));
+                latLngs2.add(new LatLng(-12.176026, -77.003630));*/
+
+
+                latLngs2.add(new LatLng(-12.119249993, -77.036920888));
+                latLngs2.add(new LatLng(-12.117952948, -77.036830187));
+                latLngs2.add(new LatLng(-12.116914459, -77.03578949));
+                /*latLngs2.add(new LatLng(-12.11098765, -77.035703659));
+                latLngs2.add(new LatLng(-12.109403648, -77.034738064));
+                latLngs2.add(new LatLng(-12.112235962, -77.038407326));
+                latLngs2.add(new LatLng(-12.117931969, -77.038954496));
+                latLngs2.add(new LatLng(-12.120759995, -77.038100621));*/
+
 
                 DrawRouteWithList(latLngs2);
                 setInterfacePointsList(new InterfacePointsList() {
@@ -455,7 +466,100 @@ public class TrackingMainActivity extends AppCompatActivity implements View.OnCl
                                 beRouteDetailsesTemp[j] = beRouteDetails;
                             }
                             // Realizando los cálculos necesarios para la ruta
-                            beRouteDetailses = Helper.GetParamBetweenPoints(beRouteDetailsesTemp);
+                            //beRouteDetailses = Helper.GetParamBetweenPoints(beRouteDetailsesTemp);
+
+                            beRouteDetailses = new BERouteDetails[10];
+                            BERouteDetails details = new BERouteDetails();
+                            details.setLatitude("-12.12017077");
+                            details.setLongitude("-77.03657004");
+                            details.setIsWaypoint(false);
+                            details.setDistanceNextPoint(39.69164061);
+                            details.setDirectionNextPoint(-87.2403044);
+                            details.setOrder(1);
+                            beRouteDetailses[0] = details;
+
+                            details = new BERouteDetails();
+                            details.setLatitude("-12.1201536");
+                            details.setLongitude("-77.0369343");
+                            details.setIsWaypoint(false);
+                            details.setDistanceNextPoint(10.42746452);
+                            details.setDirectionNextPoint(3.837526346);
+                            details.setOrder(2);
+                            beRouteDetailses[1] = details;
+
+                            details = new BERouteDetails();
+                            details.setLatitude("-12.12006014");
+                            details.setLongitude("-77.03692789");
+                            details.setIsWaypoint(false);
+                            details.setDistanceNextPoint(74.60402445);
+                            details.setDirectionNextPoint(0.486419123);
+                            details.setOrder(3);
+                            beRouteDetailses[2] = details;
+
+                            details = new BERouteDetails();
+                            details.setLatitude("-12.11938998");
+                            details.setLongitude("-77.03692207");
+                            details.setIsWaypoint(false);
+                            details.setDistanceNextPoint(0.658631786);
+                            details.setDirectionNextPoint(90.57766668);
+                            details.setOrder(4);
+                            beRouteDetailses[3] = details;
+
+                            details = new BERouteDetails();
+                            details.setLatitude("-12.11939004");
+                            details.setLongitude("-77.03691602");
+                            details.setIsWaypoint(true);
+                            details.setDistanceNextPoint(29.94142433);
+                            details.setDirectionNextPoint(-0.787810528);
+                            details.setOrder(5);
+                            beRouteDetailses[4] = details;
+
+                            details = new BERouteDetails();
+                            details.setLatitude("-12.1191211");
+                            details.setLongitude("-77.0369198");
+                            details.setIsWaypoint(false);
+                            details.setDistanceNextPoint(121.4114295);
+                            details.setDirectionNextPoint(91.13490947);
+                            details.setOrder(6);
+                            beRouteDetailses[5] = details;
+
+                            details = new BERouteDetails();
+                            details.setLatitude("-12.1191427");
+                            details.setLongitude("-77.0358045");
+                            details.setIsWaypoint(false);
+                            details.setDistanceNextPoint(8.113211109);
+                            details.setDirectionNextPoint(-3.015311609);
+                            details.setOrder(7);
+                            beRouteDetailses[6] = details;
+
+                            details = new BERouteDetails();
+                            details.setLatitude("-12.11906992");
+                            details.setLongitude("-77.03580842");
+                            details.setIsWaypoint(false);
+                            details.setDistanceNextPoint(8.896529052);
+                            details.setDirectionNextPoint(-0.125328844);
+                            details.setOrder(8);
+                            beRouteDetailses[7] = details;
+
+                            details = new BERouteDetails();
+                            details.setLatitude("-12.11899");
+                            details.setLongitude("-77.0358086");
+                            details.setIsWaypoint(false);
+                            details.setDistanceNextPoint(73.10572732);
+                            details.setDirectionNextPoint(-88.51454951);
+                            details.setOrder(9);
+                            beRouteDetailses[8] = details;
+
+                            details = new BERouteDetails();
+                            details.setLatitude("-12.11897298");
+                            details.setLongitude("-77.03648006");
+                            details.setIsWaypoint(false);
+                            details.setDistanceNextPoint(0.0);
+                            details.setDirectionNextPoint(0.0);
+                            details.setOrder(10);
+                            beRouteDetailses[9] = details;
+
+                            beRouteDetailses = Helper.GetParamBetweenPoints(beRouteDetailses);
 
 
                             for (int k = 0; k < beRouteDetailses.length; k++) {
@@ -582,7 +686,7 @@ public class TrackingMainActivity extends AppCompatActivity implements View.OnCl
                     //outPath = Helper.isNearPath(testLatLng, location);
 
                     if (beRouteDetailses != null) {
-                        outPathNew = Helper.isNearPathMichelin(beRouteDetailses, GpsConstants.WAYPOINTS_GROUP, location).getBeCurrentLocation().getStatus();
+                        outPathNew = Helper.isNearPathMichelin(beRouteDetailses, GpsConstants.WAYPOINTS_GROUP, location, 0).getBeCurrentLocation().getStatus();
                     }
 
                     switch (outPathNew) {

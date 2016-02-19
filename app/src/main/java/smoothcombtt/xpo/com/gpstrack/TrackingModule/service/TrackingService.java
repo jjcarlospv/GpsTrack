@@ -455,7 +455,7 @@ public class TrackingService extends Service {
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         //locationManager.getProvider(locationManager.getBestProvider(createCoarseCriteria(), true));
 
-        //locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, locationListenerNetwork);
+        locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, locationListenerNetwork);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
         Log.e("LocService", "StartService");
     }
